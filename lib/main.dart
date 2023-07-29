@@ -1,6 +1,6 @@
 import 'package:ecommerce/screens/auth.dart';
 import 'package:ecommerce/screens/search_screen.dart';
-import 'package:ecommerce/screens/splash.dart';
+import 'package:ecommerce/sellerScreen/splash.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

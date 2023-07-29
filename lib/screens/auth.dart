@@ -5,6 +5,7 @@ import 'package:ecommerce/widget/user_image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -24,7 +25,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
   var _isLogin = true;
   var _enteredEmail = '';
+  var _enteredUsername = '';
   var _enteredPassword = '';
+  var _enteredPhone = '';
+  var _enteredIC = '';
+  var _enteredAddress = '';
   File? _selectedImage;
   var _isAuthenticating = false;
 
@@ -60,18 +65,18 @@ class _AuthScreenState extends State<AuthScreen> {
             .child('${userCredentials.user!.uid}.jpg');
         await storageRef.putFile(_selectedImage!);
         final imageUrl = await storageRef.getDownloadURL();
-        // await FirebaseFirestore.instance
-        //     .collection('users')
-        //     .doc(userCredentials.user!.uid)
-        //     .set({
-        //   'username': 'to be',
-        //   'phone': 'to be',
-        //   'ic': 'to be',
-        //   'address': 'to be',
-        //   'email': _enteredEmail,
-        //   'password': _enteredPassword,
-        //   'image_url': imageUrl,
-        // });
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredentials.user!.uid)
+            .set({
+          'username': _enteredUsername,
+          'phone': _enteredPhone,
+          'ic': _enteredIC,
+          'address': _enteredAddress,
+          'email': _enteredEmail,
+          'password': _enteredPassword,
+          'image_url': imageUrl,
+        });
       }
     } on FirebaseAuthException catch (error) {
       if (error.code == 'weak-password') {
@@ -145,6 +150,23 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredEmail = value!;
                             },
                           ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration:
+                                  const InputDecoration(labelText: 'Username'),
+                              enableSuggestions: false,
+                              validator: (value) {
+                                if (value == null ||
+                                    value.isEmpty ||
+                                    value.trim().length < 4) {
+                                  return 'Please enter at least 4 characters.';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _enteredUsername = value!;
+                              },
+                            ),
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: 'Password',
@@ -160,6 +182,70 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredPassword = value!;
                             },
                           ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                  labelText: 'Phone Number'),
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please enter your phone number';
+                                }
+                                final phoneRegex =
+                                    RegExp(r'^\+?0[0-9]{1,2}[0-9]{7,8}$');
+                                if (!phoneRegex.hasMatch(value)) {
+                                  return 'Please enter a valid Malaysia phone number';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _enteredPhone = value!;
+                              },
+                            ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                labelText: 'IC Number',
+                              ),
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please enter your IC number';
+                                }
+
+                                // IC number validation logic for Malaysia
+                                final icRegex = RegExp(r'^[0-9]{12}$');
+                                if (!icRegex.hasMatch(value)) {
+                                  return 'Please enter a valid Malaysia IC number';
+                                }
+
+                                return null; // Return null if the IC number is valid
+                              },
+                              onSaved: (value) {
+                                _enteredIC = value!;
+                              },
+                            ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                labelText: 'Address',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter your address';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _enteredAddress = value!;
+                              },
+                            ),
                           const SizedBox(height: 12),
                           if (_isAuthenticating)
                             const CircularProgressIndicator(),

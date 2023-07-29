@@ -1,43 +1,36 @@
-import 'package:ecommerce/screens/account_settings.dart';
-import 'package:ecommerce/screens/become_seller.dart';
-import 'package:ecommerce/screens/delivery_page.dart';
-import 'package:ecommerce/screens/favorite_product.dart';
-import 'package:ecommerce/screens/product_category.dart';
-import 'package:ecommerce/screens/user_activity.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ecommerce/widget/button_widget.dart';
 import 'package:ecommerce/widget/delivery_button.dart';
+import 'package:ecommerce/userScreen/account_settings.dart';
+import 'package:ecommerce/screens/become_seller.dart';
+import 'package:ecommerce/userScreen/delivery_page.dart';
+import 'package:ecommerce/screens/favorite_product.dart';
+import 'package:ecommerce/screens/product_category.dart';
+import 'package:ecommerce/userScreen/user_activity.dart';
+import 'package:ecommerce/widget/data_fetcher.dart';
 
-class AccountDetailsScreen extends StatelessWidget {
+class AccountDetailsScreen extends StatefulWidget {
   const AccountDetailsScreen({super.key});
 
+  @override
+  State<AccountDetailsScreen> createState() {
+    return _AccountDetailsScreenState();
+  }
+}
+
+class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              // Handle button tap
-            },
-            child: const Row(
-              children: [
-                CircleAvatar(
-                  radius: 36,
-                ),
-                SizedBox(width: 16),
-                Text(
-                  'Chow Kok Keong',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+          Container(
+            height: 75, // Adjust the height as needed
+            child: FirestoreDataFetcher(
+              userId: FirebaseAuth.instance.currentUser!.uid,
             ),
           ),
           const SizedBox(height: 16),
