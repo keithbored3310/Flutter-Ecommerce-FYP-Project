@@ -5,7 +5,7 @@ import 'package:ecommerce/models/user.dart';
 class FirestoreDataFetcher extends StatefulWidget {
   final String userId;
 
-  FirestoreDataFetcher({required this.userId});
+  const FirestoreDataFetcher({required this.userId, super.key});
 
   @override
   _FirestoreDataFetcherState createState() => _FirestoreDataFetcherState();
@@ -28,7 +28,7 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
           }
 
           if (!snapshot.hasData) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           }
 
           // Data has been fetched successfully
@@ -52,10 +52,10 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
                             backgroundImage: NetworkImage(_user!.imageUrl),
                             // You can also use other properties of CircleAvatar to customize the appearance
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Text(
                             _user!.username,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
@@ -66,7 +66,7 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
                     // You can add other widgets or UI elements here
                   ],
                 )
-              : Text('User data not found');
+              : const Text('User data not found');
         },
       ),
     );

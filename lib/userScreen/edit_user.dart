@@ -7,7 +7,7 @@ import 'dart:io';
 class EditUserScreen extends StatefulWidget {
   final String userId;
 
-  const EditUserScreen({required this.userId});
+  const EditUserScreen({required this.userId, super.key});
 
   @override
   _EditUserScreenState createState() => _EditUserScreenState();
@@ -75,16 +75,16 @@ class _EditUserScreenState extends State<EditUserScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User information updated successfully')),
+        const SnackBar(content: Text('User information updated successfully')),
       );
 
       // Delay navigation to UserDetailsScreen after SnackBar disappears
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       Navigator.pop(context);
     } catch (e) {
       print('Error updating user data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again.')),
+        const SnackBar(content: Text('An error occurred. Please try again.')),
       );
     }
   }
@@ -133,12 +133,12 @@ class _EditUserScreenState extends State<EditUserScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile image uploaded successfully')),
+        const SnackBar(content: Text('Profile image uploaded successfully')),
       );
     } catch (e) {
       print('Error uploading profile image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again.')),
+        const SnackBar(content: Text('An error occurred. Please try again.')),
       );
     }
   }
@@ -147,16 +147,17 @@ class _EditUserScreenState extends State<EditUserScreen> {
     return (await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Discard Changes?'),
-            content: Text('Are you sure you want to discard the changes?'),
+            title: const Text('Discard Changes?'),
+            content:
+                const Text('Are you sure you want to discard the changes?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text('No'),
+                child: const Text('No'),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Yes'),
+                child: const Text('Yes'),
               ),
             ],
           ),
@@ -170,10 +171,10 @@ class _EditUserScreenState extends State<EditUserScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Edit User Information'),
+          title: const Text('Edit User Information'),
           actions: [
             IconButton(
-              icon: Icon(Icons.save),
+              icon: const Icon(Icons.save),
               onPressed: () {
                 _updateUserData();
                 _uploadProfileImage();
@@ -197,7 +198,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -205,37 +206,37 @@ class _EditUserScreenState extends State<EditUserScreen> {
                     onPressed: () {
                       _pickImageFromCamera();
                     },
-                    icon: Icon(Icons.camera_alt),
-                    label: Text('Take Picture'),
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Take Picture'),
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
                       _pickImageFromGallery();
                     },
-                    icon: Icon(Icons.photo),
-                    label: Text('Pick from Gallery'),
+                    icon: const Icon(Icons.photo),
+                    label: const Text('Pick from Gallery'),
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _usernameController,
-                decoration: InputDecoration(labelText: 'Username'),
+                decoration: const InputDecoration(labelText: 'Username'),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _icController,
-                decoration: InputDecoration(labelText: 'IC'),
+                decoration: const InputDecoration(labelText: 'IC'),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone'),
+                decoration: const InputDecoration(labelText: 'Phone'),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _addressController,
-                decoration: InputDecoration(labelText: 'Address'),
+                decoration: const InputDecoration(labelText: 'Address'),
               ),
             ],
           ),

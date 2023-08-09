@@ -11,7 +11,7 @@ class ProductPanelScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Search Results for "$query"'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Display search results here'),
       ),
     );

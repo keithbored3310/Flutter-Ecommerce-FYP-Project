@@ -1,3 +1,4 @@
+import 'package:ecommerce/userScreen/change_password.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/models/user.dart';
@@ -76,7 +77,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Username',
                               style: TextStyle(
                                 fontSize: 20,
@@ -84,12 +85,12 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             ),
                             Text(
                               _user!.username,
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 1,
                         indent: 16,
                         endIndent: 16,
@@ -100,18 +101,18 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Address',
                               style: TextStyle(fontSize: 20),
                             ),
                             Text(
                               _user!.address,
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 1,
                         indent: 16,
                         endIndent: 16,
@@ -122,18 +123,18 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Email',
                               style: TextStyle(fontSize: 20),
                             ),
                             Text(
                               _user!.email,
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 1,
                         indent: 16,
                         endIndent: 16,
@@ -144,18 +145,18 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'IC',
                               style: TextStyle(fontSize: 20),
                             ),
                             Text(
                               _user!.ic,
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 1,
                         indent: 16,
                         endIndent: 16,
@@ -166,18 +167,55 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Phone',
                               style: TextStyle(fontSize: 20),
                             ),
                             Text(
                               _user!.phone,
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ),
-                      Divider(
+                      const Divider(
+                        thickness: 1,
+                        indent: 16,
+                        endIndent: 16,
+                        color: Colors.black,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Update Password',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Navigate to the change password screen
+                                // (Implement the change password screen)
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChangePasswordScreen(
+                                        userId: widget.userId),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Click here to change your password',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(
                         thickness: 1,
                         indent: 16,
                         endIndent: 16,

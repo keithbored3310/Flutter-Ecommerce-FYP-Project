@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ecommerce/screens/account_details.dart';
 import 'package:ecommerce/screens/homepage.dart';
+import 'package:ecommerce/screens/cart_screen.dart';
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({Key? key}) : super(key: key);
@@ -55,24 +56,36 @@ class _TabsScreenState extends State<TabsScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.shopping_cart),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CartScreen()),
+                      );
+                    },
                   ),
                 ]
               : [
                   IconButton(
                     icon: const Icon(Icons.shopping_cart),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CartScreen()),
+                      );
+                    },
                   ),
                 ],
         ),
       ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
+          const SliverAppBar(
             pinned: true,
             toolbarHeight: 0,
             backgroundColor:
-                const Color.fromRGBO(231, 240, 242, 1), // Set initial color
+                Color.fromRGBO(231, 240, 242, 1), // Set initial color
           ),
           SliverFillRemaining(
             child: activePage,

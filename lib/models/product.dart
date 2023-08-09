@@ -5,6 +5,7 @@ class Product {
   final double discount;
   final double discountedPrice;
   final String name;
+  final String description;
   final int partNumber;
   final double price;
   final int quantity;
@@ -17,6 +18,7 @@ class Product {
     required this.discount,
     required this.discountedPrice,
     required this.name,
+    required this.description,
     required this.partNumber,
     required this.price,
     required this.quantity,
@@ -31,6 +33,7 @@ class Product {
       discount: json['discount'],
       discountedPrice: json['discountedPrice'],
       name: json['name'],
+      description: json['description'],
       partNumber: json['partNumber'],
       price: json['price'],
       quantity: json['quantity'],

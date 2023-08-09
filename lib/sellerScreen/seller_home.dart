@@ -1,8 +1,7 @@
-//build a seller pane that contain few button to navigate to different screen, the button contain manage order, manage product
-
-import 'package:ecommerce/adminScreen/test_add_brand.dart';
-import 'package:ecommerce/adminScreen/test_add_product.dart';
-import 'package:ecommerce/adminScreen/test_add_type.dart';
+import 'package:ecommerce/adminScreen/brand_screen.dart';
+import 'package:ecommerce/adminScreen/category_screen.dart';
+import 'package:ecommerce/adminScreen/type_screen.dart';
+import 'package:ecommerce/sellerScreen/add_product.dart';
 import 'package:ecommerce/sellerScreen/manage_product.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce/widget/button_widget.dart';
@@ -45,7 +44,7 @@ class SellerHomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ManageProduct()),
+                        builder: (context) => const ProductListScreen()),
                   );
                 },
               ),
@@ -64,7 +63,7 @@ class SellerHomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const TestAddBrand()),
+                        builder: (context) => const BrandScreen()),
                   );
                 },
               ),
@@ -83,7 +82,7 @@ class SellerHomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const TestAddProduct()),
+                        builder: (context) => const CategoryScreen()),
                   );
                 },
               ),
@@ -101,8 +100,7 @@ class SellerHomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const TestAddType()),
+                    MaterialPageRoute(builder: (context) => const TypeScreen()),
                   );
                 },
               ),

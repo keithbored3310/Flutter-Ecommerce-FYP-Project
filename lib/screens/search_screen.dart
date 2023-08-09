@@ -65,7 +65,7 @@ class _SearchScreenState extends State<SearchScreen> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
               hintText: 'Enter search query',
               suffixIcon: ElevatedButton(
                 onPressed: _performSearch,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DeliveryPage extends StatefulWidget {
+  const DeliveryPage({super.key});
+
   @override
   _DeliveryPageState createState() => _DeliveryPageState();
 }
@@ -26,15 +28,15 @@ class _DeliveryPageState extends State<DeliveryPage>
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('Delivery'),
+        title: const Text('Delivery'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
+          tabs: const [
             Tab(text: 'To Pay'),
             Tab(text: 'To Ship'),
             Tab(text: 'To Receive'),
@@ -44,7 +46,7 @@ class _DeliveryPageState extends State<DeliveryPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
+        children: const [
           DeliveryStatusPage(title: 'To Pay'),
           DeliveryStatusPage(title: 'To Ship'),
           DeliveryStatusPage(title: 'To Receive'),
@@ -58,7 +60,7 @@ class _DeliveryPageState extends State<DeliveryPage>
 class DeliveryStatusPage extends StatelessWidget {
   final String title;
 
-  const DeliveryStatusPage({required this.title});
+  const DeliveryStatusPage({required this.title, super.key});
 
   @override
   Widget build(BuildContext context) {

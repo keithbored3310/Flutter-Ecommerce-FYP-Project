@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/widget/user_image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -33,12 +32,14 @@ class _AuthScreenState extends State<AuthScreen> {
   File? _selectedImage;
   var _isAuthenticating = false;
 
+  // Toggles the password visibility
+  bool _isPasswordVisible = false;
+
   void _submit() async {
     final isValid = _form.currentState!.validate();
 
     if (!isValid || !_isLogin && _selectedImage == null) {
-      // Change the condition to execute when `isValid` is false
-      //show error message
+      // Show error message
       return;
     }
 
@@ -65,10 +66,16 @@ class _AuthScreenState extends State<AuthScreen> {
             .child('${userCredentials.user!.uid}.jpg');
         await storageRef.putFile(_selectedImage!);
         final imageUrl = await storageRef.getDownloadURL();
+
+        // Get the next auto-incremented number
+        int autoIncrementedNumber = await _getNextAutoIncrementNumber();
+
+        // Add user data with auto-incremented ID to the Firestore collection
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredentials.user!.uid)
             .set({
+          'id': autoIncrementedNumber,
           'username': _enteredUsername,
           'phone': _enteredPhone,
           'ic': _enteredIC,
@@ -79,21 +86,31 @@ class _AuthScreenState extends State<AuthScreen> {
         });
       }
     } on FirebaseAuthException catch (error) {
-      if (error.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (error.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      }
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message ?? 'Authentication failed.'),
-        ),
-      );
-      setState(() {
-        _isAuthenticating = false;
-      });
+      // Handle FirebaseAuthException
+    } finally {
+      _isAuthenticating = false;
     }
+  }
+
+  Future<int> _getNextAutoIncrementNumber() async {
+    // Get the latest auto-incremented number from Firestore
+    var latestNumberSnapshot = await FirebaseFirestore.instance
+        .collection('auto_increment')
+        .doc('users_counter')
+        .get();
+
+    int latestNumber = latestNumberSnapshot.exists
+        ? latestNumberSnapshot.data()!['latest_number']
+        : 0;
+
+    // Increment the latest number and update it in Firestore
+    int nextNumber = latestNumber + 1;
+    await FirebaseFirestore.instance
+        .collection('auto_increment')
+        .doc('users_counter')
+        .set({'latest_number': nextNumber});
+
+    return nextNumber;
   }
 
   @override
@@ -168,10 +185,21 @@ class _AuthScreenState extends State<AuthScreen> {
                               },
                             ),
                           TextFormField(
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Password',
+                              suffixIcon: IconButton(
+                                icon: Icon(_isPasswordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
                             ),
-                            obscureText: true, //hide password
+                            obscureText:
+                                !_isPasswordVisible, // Toggle visibility
                             validator: (value) {
                               if (value == null || value.trim().length < 6) {
                                 return 'Password must be at least 6 characters long.';
@@ -181,6 +209,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             onSaved: (value) {
                               _enteredPassword = value!;
                             },
+                            // ... Existing code ...
                           ),
                           if (!_isLogin)
                             TextFormField(

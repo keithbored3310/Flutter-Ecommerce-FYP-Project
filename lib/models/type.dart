@@ -1,23 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Type {
-  const Type({
+  String id;
+  String type;
+
+  Type({
     required this.id,
     required this.type,
   });
 
-  final String id;
-  final String type;
+  factory Type.fromDocumentSnapshot(
+      DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    Map<String, dynamic> data = snapshot.data()!;
+    return Type(
+      id: snapshot.id,
+      type: data['type'],
+    );
+  }
 
+  // Method to convert the Type object to a JSON representation
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'type': type,
     };
-  }
-
-  factory Type.fromJson(Map<String, dynamic> json) {
-    return Type(
-      id: json['id'],
-      type: json['type'],
-    );
   }
 }

@@ -1,119 +1,154 @@
-import 'package:ecommerce/adminScreen/test_add_product.dart';
-import 'package:ecommerce/screens/tabs.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/models/category.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-class AddCategory extends StatefulWidget {
-  final VoidCallback refreshCallback;
-  const AddCategory({required this.refreshCallback, Key? key})
-      : super(key: key);
+class AddCategoryPage extends StatefulWidget {
+  const AddCategoryPage({super.key});
 
   @override
-  _AddCategoryState createState() => _AddCategoryState();
+  State<AddCategoryPage> createState() => _AddCategoryPageState();
 }
 
-class _AddCategoryState extends State<AddCategory> {
+class _AddCategoryPageState extends State<AddCategoryPage> {
   final _formKey = GlobalKey<FormState>();
-  var _enteredCategoryName = '';
-  var _isSending = false;
-
-  void _saveCategory() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      setState(() {
-        _isSending = true;
-      });
-
-      final url = Uri.https(
-        'ecommerce-cb642-default-rtdb.firebaseio.com',
-        'category-list.json',
-      );
-      final headers = {'Content-Type': 'application/json'};
-      final body = json.encode({
-        'name': _enteredCategoryName,
-      });
-
-      final response = await http.post(url, headers: headers, body: body);
-
-      final currentContext = context;
-      if (response.statusCode == 200) {
-        // Successfully add product into database
-        Navigator.pop(currentContext);
-        widget.refreshCallback(); // Trigger refresh callback
-      } else {
-        // Failed
-      }
-
-      setState(() {
-        _isSending = false;
-      });
-    }
-  }
+  final _categoryController = TextEditingController();
+  String? _errorMessage;
+  bool _isAddingCategory = false; // Track whether category is being added
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Category'),
+        title: const Text('Add Category'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Category Name',
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _categoryController,
+                decoration: const InputDecoration(labelText: 'Category Name'),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'^[a-zA-Z ]+$'),
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'^[a-zA-Z ]+$'),
-                    ),
-                  ],
-                  validator: (value) {
-                    if (value == null ||
-                        value.isEmpty ||
-                        value.trim().length <= 1 ||
-                        value.trim().length > 50) {
-                      return 'Please enter a category name';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _enteredCategoryName = value!;
-                  },
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _saveCategory,
-                        child: const Text('Add Category'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                ],
+                validator: (value) {
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 1 ||
+                      value.trim().length > 50) {
+                    return 'Please enter a category name';
+                  }
+                  return _errorMessage;
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Cancel button pressed
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _isAddingCategory ? null : _addCategory,
+                    child: _isAddingCategory
+                        ? const CircularProgressIndicator() // Show CircularProgressIndicator when adding brand
+                        : const Text('Add Category'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _addCategory() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isAddingCategory = true;
+        _errorMessage = null; // Reset error message
+      });
+
+      // Form is valid, check if brand name already exists (case-insensitive)
+      Category? existingBrand =
+          await _checkCategoryName(_categoryController.text);
+      if (existingBrand != null) {
+        setState(() {
+          _errorMessage = 'Category name already exists';
+          _isAddingCategory = false;
+        });
+      } else {
+        // Brand name is valid, add the brand to the Firestore collection
+        addCategoryToFirestore(_categoryController.text);
+
+        // Show a Snackbar to indicate successful brand addition
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Category added successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Wait for the Snackbar to disappear, then return to the previous page
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  Future<Category?> _checkCategoryName(String categoryName) async {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('categories')
+        .where('category', isEqualTo: categoryName.toLowerCase())
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      var categoryDoc = querySnapshot.docs.first;
+      return Category(
+        id: categoryDoc.id,
+        category: categoryDoc.get('category'),
+      );
+    }
+
+    return null;
+  }
+
+  void addCategoryToFirestore(String categoryName) async {
+    int autoIncrementedNumber = await _getNextAutoIncrementNumber();
+    FirebaseFirestore.instance.collection('categories').add({
+      'id': autoIncrementedNumber,
+      'category': categoryName,
+    });
+  }
+
+  Future<int> _getNextAutoIncrementNumber() async {
+    // Get the latest auto-incremented number from Firestore
+    var latestNumberSnapshot = await FirebaseFirestore.instance
+        .collection('auto_increment')
+        .doc('categories_counter')
+        .get();
+
+    int latestNumber = latestNumberSnapshot.exists
+        ? latestNumberSnapshot.data()!['latest_number']
+        : 0;
+
+    // Increment the latest number and update it in Firestore
+    int nextNumber = latestNumber + 1;
+    await FirebaseFirestore.instance
+        .collection('auto_increment')
+        .doc('categories_counter')
+        .set({'latest_number': nextNumber});
+
+    return nextNumber;
   }
 }
