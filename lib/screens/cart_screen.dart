@@ -1,337 +1,432 @@
+import 'package:ecommerce/screens/order_confirmation.dart';
+import 'package:ecommerce/screens/product_details.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({Key? key}) : super(key: key);
-
   @override
   _CartScreenState createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  String? _currentUserId;
-  bool _selectAll = false;
+  late String userUid;
+  late Stream<QuerySnapshot> cartItemsStream;
+  List<String> selectedItems = []; // List to store selected item IDs
+  Map<String, dynamic> productData = {}; // Variable to store product data
+  int maxQuantity = 0; // Variable to store max quantity
+  late TextEditingController _quantityController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _getCurrentUserId();
+    fetchUserUid();
+    _quantityController = TextEditingController();
   }
 
-  void _getCurrentUserId() {
-    final user = FirebaseAuth.instance.currentUser;
+  Future<void> fetchUserUid() async {
+    User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
-        _currentUserId = user.uid;
+        userUid = user.uid;
       });
+      initializeCartItemsStream();
     }
+  }
+
+  void initializeCartItemsStream() {
+    cartItemsStream = FirebaseFirestore.instance
+        .collection('carts')
+        .where('userId', isEqualTo: userUid)
+        .snapshots();
+  }
+
+  void toggleItemSelection(String itemId) {
+    setState(() {
+      if (selectedItems.contains(itemId)) {
+        selectedItems.remove(itemId);
+      } else {
+        selectedItems.add(itemId);
+      }
+    });
+  }
+
+  bool isItemSelected(String itemId) {
+    return selectedItems.contains(itemId);
+  }
+
+  double calculateTotalPrice(List<DocumentSnapshot> items) {
+    double total = 0;
+    for (var item in items) {
+      if (selectedItems.contains(item.id)) {
+        total += item['discountedPrice'] * item['quantity'];
+      }
+    }
+    return total;
+  }
+
+  Future<void> updateCartItemQuantity(String itemId, int newQuantity) async {
+    DocumentSnapshot cartItemSnapshot =
+        await FirebaseFirestore.instance.collection('carts').doc(itemId).get();
+
+    String productId =
+        cartItemSnapshot['productId']; // Get the productId from the cart item
+
+    DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId) // Use the productId to fetch the product document
+        .get();
+
+    print('Product Snapshot Data: ${productSnapshot.data()}'); // Debugging log
+
+    if (productSnapshot.exists) {
+      int maxAvailableQuantity = productSnapshot['quantity'];
+
+      if (newQuantity > maxAvailableQuantity) {
+        newQuantity = maxAvailableQuantity;
+      }
+
+      if (newQuantity > 0) {
+        FirebaseFirestore.instance
+            .collection('carts')
+            .doc(itemId)
+            .update({'quantity': newQuantity});
+      } else {
+        FirebaseFirestore.instance.collection('carts').doc(itemId).delete();
+      }
+    } else {
+      print('Product document does not exist.');
+    }
+  }
+
+  Future<void> _fetchProductDataAndMaxQuantity(
+      String productId, int cartQuantity) async {
+    try {
+      DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(productId)
+          .get();
+
+      Map<dynamic, dynamic> productDataMap =
+          productSnapshot.data() as Map<dynamic, dynamic>;
+
+      setState(() {
+        productData = Map<String, dynamic>.from(productDataMap);
+        maxQuantity = productSnapshot['quantity'] ?? 0;
+
+        // Set the initial value for the quantity controller
+        _quantityController.text = cartQuantity.toString();
+      });
+    } catch (e) {
+      // Handle error fetching data
+      print('Error fetching product data: $e');
+    }
+  }
+
+  void proceedToCheckout(QuerySnapshot<Object?> snapshot) async {
+    double totalOrderPrice = calculateTotalPrice(snapshot.docs);
+
+    // Create order document in the orders collection
+    DocumentReference orderRef =
+        await FirebaseFirestore.instance.collection('orders').add({
+      'userId': userUid,
+      'totalOrderPrice': totalOrderPrice, // Added totalOrderPrice
+      'status': 1, // Status for pending
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // Iterate through selected items
+    for (var itemId in selectedItems) {
+      DocumentSnapshot cartItemSnapshot = await FirebaseFirestore.instance
+          .collection('carts')
+          .doc(itemId)
+          .get();
+
+      // Get product details from the cart item
+      String productId = cartItemSnapshot['productId'];
+      int cartQuantity = cartItemSnapshot['quantity'];
+      double itemDiscountedPrice = cartItemSnapshot['discountedPrice'];
+      String imageUrl = cartItemSnapshot['imageUrl'];
+      String productName = cartItemSnapshot['name'];
+      String sellerId = cartItemSnapshot['sellerId'];
+
+      // Calculate order details
+      double itemTotalPrice = itemDiscountedPrice * cartQuantity;
+
+      // Create order document in the userOrders subcollection
+      await orderRef.collection('userOrders').add({
+        'productId': productId,
+        'quantity': cartQuantity,
+        'itemTotalPrice': itemTotalPrice,
+        'imageUrl': imageUrl,
+        'productName': productName,
+        'sellerId': sellerId,
+        'userId': userUid,
+        'status': 1, // Status for pending
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Remove item from cart
+      await FirebaseFirestore.instance.collection('carts').doc(itemId).delete();
+    }
+
+    // Clear selected items
+    setState(() {
+      selectedItems.clear();
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderConfirmationScreen(
+          orderId: orderRef.id,
+          userUid: userUid,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shopping Cart'),
+        title: Text('Cart'),
       ),
-      body: _currentUserId != null
-          ? Column(
+      body: StreamBuilder<QuerySnapshot>(
+        stream: cartItemsStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('No items in the cart.'),
+            );
+          } else {
+            return Column(
               children: [
                 Expanded(
-                  child: _buildCartItemsList(),
-                ),
-                _buildBottomBar(),
-              ],
-            )
-          : const Center(child: CircularProgressIndicator()),
-    );
-  }
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      var item = snapshot.data!.docs[index];
+                      String itemId = item.id;
+                      String productId =
+                          item['productId']; // Get productId from cart item
 
-  Widget _buildCartItemsList() {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('carts')
-          .where('userId', isEqualTo: _currentUserId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Error fetching cart items'));
-        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Center(
-                child: Text(
-                  'Oops, Your shopping cart is empty',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Browse our awesome products now!',
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Navigate back to previous page
-                },
-                child: const Text('Go Shopping Now'),
-              ),
-            ],
-          );
-        } else {
-          final cartItems = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: cartItems.length,
-            itemBuilder: (context, index) {
-              final cartItemDoc = cartItems[index];
-              final cartItemData = cartItemDoc.data();
-              final String productId = cartItemData['productId'];
-
-              // Pass cartItemDoc to display the cart item details
-              return _buildCartItemWidget(cartItemDoc);
-            },
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildCartItemWidget(
-    QueryDocumentSnapshot<Map<String, dynamic>> cartItemDoc,
-  ) {
-    final cartId = cartItemDoc.id;
-    final cartItemData = cartItemDoc.data();
-    final String productId = cartItemData['productId'];
-    int currentQuantity = cartItemData['quantity'];
-    final String productName = cartItemData['name'];
-    final String imageUrl = cartItemData['imageUrl'];
-    double discountedPrice = cartItemData['discountedPrice'];
-
-    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      future: FirebaseFirestore.instance
-          .collection('products')
-          .doc(productId)
-          .get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Error fetching product details'));
-        } else if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Center(child: Text('Product not found'));
-        } else {
-          final productData = snapshot.data!.data();
-          final int maxQuantity = productData!['quantity'];
-
-          return Column(
-            children: [
-              ListTile(
-                leading: Checkbox(
-                  value: _selectAll,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectAll = newValue!;
-                    });
-                  },
-                ),
-                title: Row(
-                  children: [
-                    Image.network(imageUrl, width: 50, height: 50),
-                    const SizedBox(
-                        width: 10), // Add some spacing between image and text
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            productName,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'RM ${discountedPrice.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
+                      int cartQuantity = item['quantity'];
+                      double itemDiscountedPrice = item['discountedPrice'];
+                      _fetchProductDataAndMaxQuantity(productId, cartQuantity);
+                      return ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailsUserScreen(
+                                productId: productId,
+                                productData:
+                                    productData, // Replace with actual product data from Firestore
+                                maxQuantity:
+                                    maxQuantity, // Replace with actual max quantity from Firestore
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    QuantityDisplay(
-                      quantity: currentQuantity,
-                      maxQuantity: maxQuantity,
-                      onUpdate: (newQuantity) {
-                        _updateCartItemQuantity(
-                            cartId, newQuantity, maxQuantity, currentQuantity);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      _removeCartItem(cartId);
+                          );
+                        },
+                        leading: Checkbox(
+                          value: isItemSelected(itemId),
+                          onChanged: (value) {
+                            toggleItemSelection(itemId);
+                          },
+                        ),
+                        title: Row(
+                          children: [
+                            Image.network(
+                              item['imageUrl'],
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                            SizedBox(width: 10),
+                            Text(item['name']),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                    'Discounted Price: RM${(itemDiscountedPrice * cartQuantity).toStringAsFixed(2)}'),
+                                Spacer(), // Add spacer for alignment
+                                IconButton(
+                                  icon: Icon(Icons.remove_shopping_cart),
+                                  onPressed: () {
+                                    FirebaseFirestore.instance
+                                        .collection('carts')
+                                        .doc(itemId)
+                                        .delete();
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Text('Quantity: '),
+                                QuantityAdjustment(
+                                  initialQuantity: cartQuantity,
+                                  maxQuantity: maxQuantity,
+                                  onQuantityChanged: (newQuantity) {
+                                    updateCartItemQuantity(itemId, newQuantity);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
                     },
-                    child: const Text('Remove'),
                   ),
-                ],
-              ),
-            ],
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        border: const Border(top: BorderSide(color: Colors.grey)),
+                ),
+                BottomAppBar(
+                  elevation: 6,
+                  child: SizedBox(
+                    height: 56 + 12, // Increased height by 12 pixels
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: selectedItems.length ==
+                                  snapshot.data!.docs.length,
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == true) {
+                                    selectedItems = snapshot.data!.docs
+                                        .map((item) => item.id)
+                                        .toList();
+                                  } else {
+                                    selectedItems.clear();
+                                  }
+                                });
+                              },
+                            ),
+                            Text('Select All'),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Total Price:',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              'RM ${calculateTotalPrice(snapshot.data!.docs).toStringAsFixed(2)}',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: selectedItems.isNotEmpty
+                              ? () => proceedToCheckout(snapshot.data!)
+                              : null,
+                          icon: Icon(Icons.shopping_cart),
+                          label: Text('Checkout'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Checkbox(
-                value: _selectAll,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectAll = newValue!;
-                  });
-                },
-              ),
-              const Text('Select All'),
-            ],
-          ),
-          Column(
-            children: [
-              const Text(
-                  'Total Price: \$123.45'), // Calculate total price based on selected items
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {
-                  // Implement checkout logic
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => CheckoutScreen(),
-                  //   ),
-                  // );
-                },
-                child: const Text('Checkout'),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
-  }
-
-  void _removeCartItem(String cartItemId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(cartItemId)
-          .delete();
-    } catch (e) {
-      print('Error removing item: $e');
-      // Handle any errors that may occur
-    }
-  }
-
-  void _updateCartItemQuantity(String cartItemId, int newQuantity,
-      int maxQuantity, int currentQuantity) async {
-    try {
-      // Fetch the product details to get the actual maxQuantity
-      final cartItemSnapshot = await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(cartItemId)
-          .get();
-      final productId = cartItemSnapshot['productId'];
-
-      final productSnapshot = await FirebaseFirestore.instance
-          .collection('products')
-          .doc(productId)
-          .get();
-      final productData = productSnapshot.data();
-
-      final int actualMaxQuantity = productData!['quantity'];
-
-      if (newQuantity > actualMaxQuantity) {
-        newQuantity = actualMaxQuantity;
-        // Display a snackbar here to inform the user
-        // Snackbar logic goes here...
-      }
-
-      if (newQuantity < 1) {
-        // Remove the cart item from the collection
-        _removeCartItem(cartItemId);
-      } else {
-        // Update the quantity of the cart item
-        await FirebaseFirestore.instance
-            .collection('carts')
-            .doc(cartItemId)
-            .update({
-          'quantity': newQuantity,
-        });
-      }
-    } catch (e) {
-      print('Error updating quantity: $e');
-      // Handle any errors that may occur
-    }
   }
 }
 
-class QuantityDisplay extends StatelessWidget {
-  final int quantity;
+class QuantityAdjustment extends StatefulWidget {
+  final int initialQuantity;
   final int maxQuantity;
-  final ValueChanged<int> onUpdate;
+  final ValueChanged<int> onQuantityChanged;
 
-  const QuantityDisplay({
-    required this.quantity,
+  QuantityAdjustment({
+    required this.initialQuantity,
     required this.maxQuantity,
-    required this.onUpdate,
+    required this.onQuantityChanged,
   });
+
+  @override
+  _QuantityAdjustmentState createState() => _QuantityAdjustmentState();
+}
+
+class _QuantityAdjustmentState extends State<QuantityAdjustment> {
+  late int _currentQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentQuantity = widget.initialQuantity;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.remove),
+          icon: Icon(Icons.remove),
           onPressed: () {
-            if (quantity > 1) {
-              onUpdate(quantity - 1);
-            }
+            setState(() {
+              if (_currentQuantity > 1) {
+                _currentQuantity--;
+                widget.onQuantityChanged(_currentQuantity);
+              }
+            });
           },
         ),
-        Text('$quantity'),
+        SizedBox(
+          width: 50, // Adjust the width to your preference
+          child: TextField(
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            controller:
+                TextEditingController(text: _currentQuantity.toString()),
+            onTap: () {
+              // Select all text when the field is tapped
+              TextEditingController().selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: TextEditingController().text.length,
+              );
+            },
+            onChanged: (newValue) {
+              int newQuantity = int.tryParse(newValue) ?? _currentQuantity;
+              newQuantity = newQuantity.clamp(1, widget.maxQuantity);
+              setState(() {
+                _currentQuantity = newQuantity;
+                widget.onQuantityChanged(_currentQuantity);
+              });
+            },
+          ),
+        ),
         IconButton(
-          icon: const Icon(Icons.add),
+          icon: Icon(Icons.add),
           onPressed: () {
-            if (quantity < maxQuantity) {
-              onUpdate(quantity + 1);
-            }
+            setState(() {
+              if (_currentQuantity < widget.maxQuantity) {
+                _currentQuantity++;
+                widget.onQuantityChanged(_currentQuantity);
+              }
+            });
           },
         ),
       ],

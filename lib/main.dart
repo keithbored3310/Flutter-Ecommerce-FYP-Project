@@ -7,15 +7,14 @@ import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ecommerce/screens/tabs.dart';
-import 'package:ecommerce/sellerScreen/add_product.dart';
-import 'package:ecommerce/sellerScreen/manage_product.dart';
-import 'package:ecommerce/sellerScreen/seller_home.dart';
+import 'package:ecommerce/widget/order_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await deleteOldPendingOrders();
   runApp(const MyApp());
 }
 

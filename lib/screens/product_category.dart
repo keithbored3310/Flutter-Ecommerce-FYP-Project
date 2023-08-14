@@ -36,17 +36,31 @@ class ProductCategoryScreen extends StatelessWidget {
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
-                return ListTile(
-                  title: Text(category),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProductGridScreen(category: category),
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        category,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                  },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductGridScreen(category: category),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(
+                      thickness: 2.0, // Set the line width
+                      color: Colors.black, // Set the line color
+                    ),
+                  ],
                 );
               },
             );

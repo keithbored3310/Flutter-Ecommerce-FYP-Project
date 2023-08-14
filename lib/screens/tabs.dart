@@ -59,8 +59,7 @@ class _TabsScreenState extends State<TabsScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const CartScreen()),
+                        MaterialPageRoute(builder: (context) => CartScreen()),
                       );
                     },
                   ),
@@ -71,8 +70,7 @@ class _TabsScreenState extends State<TabsScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const CartScreen()),
+                        MaterialPageRoute(builder: (context) => CartScreen()),
                       );
                     },
                   ),

@@ -6,6 +6,7 @@ class Seller {
   final String pickupAddress;
   final String email;
   final String phoneNumber;
+  final String imageUrl;
 
   Seller({
     required this.sellerId,
@@ -15,6 +16,7 @@ class Seller {
     required this.pickupAddress,
     required this.email,
     required this.phoneNumber,
+    required this.imageUrl,
   });
 
   factory Seller.fromMap(Map<String, dynamic> map) {
@@ -26,6 +28,7 @@ class Seller {
       pickupAddress: map['pickupAddress'] as String,
       email: map['email'] as String,
       phoneNumber: map['phoneNumber'] as String,
+      imageUrl: map['imageUrl'] as String,
     );
   }
 }

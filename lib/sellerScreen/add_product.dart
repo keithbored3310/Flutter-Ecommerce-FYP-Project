@@ -158,7 +158,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       // Save the data to Firestore
       await newProductDoc.set(productData);
-
+      print('Uploading image to Firebase Storage...');
       // Upload image to Firebase Storage and get the image URL
       if (_imageFile != null) {
         final storageRef = FirebaseStorage.instance
@@ -166,10 +166,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
             .child('product_images/${newProductDoc.id}.jpg');
         final uploadTask = storageRef.putFile(_imageFile!);
         final downloadURL = await (await uploadTask).ref.getDownloadURL();
-
+        print('Image uploaded. Download URL: $downloadURL');
         // Add the image URL to the product data
         productData['imageUrl'] = downloadURL;
         await newProductDoc.update(productData);
+      } else {
+        print('No image file to upload.');
       }
 
       // Show a success message or navigate to another screen

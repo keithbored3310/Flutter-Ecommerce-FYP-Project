@@ -53,7 +53,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
             _avatarImage =
                 NetworkImage(userData['image_url']) as ImageProvider<Object>?;
           } else {
-            _avatarImage = const AssetImage('assets/images/default_avatar.png');
+            _avatarImage = const AssetImage('assets/images/default-avatar.png');
           }
         });
       }

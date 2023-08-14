@@ -1,7 +1,9 @@
+import 'package:ecommerce/userScreen/delivery_status_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DeliveryPage extends StatefulWidget {
-  const DeliveryPage({super.key});
+  const DeliveryPage({Key? key}) : super(key: key);
 
   @override
   _DeliveryPageState createState() => _DeliveryPageState();
@@ -10,17 +12,22 @@ class DeliveryPage extends StatefulWidget {
 class _DeliveryPageState extends State<DeliveryPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late String userUid; // Define userUid here
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    fetchUserUid(); // Call the function to fetch userUid
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> fetchUserUid() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        userUid = user.uid;
+      });
+    }
   }
 
   @override
@@ -46,28 +53,31 @@ class _DeliveryPageState extends State<DeliveryPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          DeliveryStatusPage(title: 'To Pay'),
-          DeliveryStatusPage(title: 'To Ship'),
-          DeliveryStatusPage(title: 'To Receive'),
-          DeliveryStatusPage(title: 'Complete'),
+        children: [
+          DeliveryStatusPage(
+            title: 'To Pay',
+            userUid: userUid,
+          ),
+          DeliveryStatusPage(
+            title: 'To Ship',
+            userUid: userUid,
+          ),
+          DeliveryStatusPage(
+            title: 'To Receive',
+            userUid: userUid,
+          ),
+          DeliveryStatusPage(
+            title: 'Complete',
+            userUid: userUid,
+          ),
         ],
       ),
     );
   }
-}
-
-class DeliveryStatusPage extends StatelessWidget {
-  final String title;
-
-  const DeliveryStatusPage({required this.title, super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(title),
-      ),
-    );
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 }

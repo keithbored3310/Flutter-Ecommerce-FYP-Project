@@ -4,6 +4,9 @@ import 'package:ecommerce/sellerScreen/product_details.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ecommerce/widget/filter_dialog.dart';
+
+// Make sure to adjust the import path as needed
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -13,8 +16,15 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
+  GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+  String _searchText = '';
   List<Map<String, dynamic>> products = [];
+  FilterOptions _filterOptions = FilterOptions();
   bool _sortAscending = true;
+  String? _selectedBrand;
+  String? _selectedCategory;
+  String? _selectedType;
   String? _getCurrentSellerId() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -23,34 +33,149 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return null;
   }
 
+  Widget _searchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: kToolbarHeight - 8,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.grey,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.search),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value;
+                  print('Search Text: $_searchText');
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search product...',
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> refreshProductList(
+      FilterOptions filterOptions,
+      String? selectedBrand,
+      String? selectedCategory,
+      String? selectedType) async {
+    setState(() {
+      _filterOptions = filterOptions;
+      _selectedBrand = selectedBrand;
+      _selectedCategory = selectedCategory;
+      _selectedType = selectedType;
+    });
+  }
+
+  Future<void> _showSearchDialog() async {
+    final searchController = TextEditingController(
+        text: _searchText); // Initialize with current search text
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Search Product'),
+          content: TextField(
+            controller: searchController,
+            decoration: InputDecoration(hintText: 'Enter product name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  _searchText = searchController.text;
+                  print('Search Text over here: $_searchText');
+                  // Clear filter options and selected values
+                  _filterOptions = FilterOptions();
+                  _selectedBrand = null;
+                  _selectedCategory = null;
+                  _selectedType = null;
+                });
+              },
+              child: const Text('Search'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  _searchText = ''; // Clear search text
+                  _filterOptions = FilterOptions(); // Clear filter options
+                  _selectedBrand = null;
+                  _selectedCategory = null;
+                  _selectedType = null;
+                });
+              },
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product List'),
+        title: _searchText.isEmpty ? const Text('Product List') : null,
         actions: [
-          PopupMenuButton<int>(
-            onSelected: (value) {
-              if (value == 1) {
-                setState(() {
-                  _sortAscending = true;
-                });
-              } else if (value == 2) {
-                setState(() {
-                  _sortAscending = false;
-                });
-              }
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              _showSearchDialog();
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem<int>(
-                value: 1,
-                child: Text('Sort A-Z'),
-              ),
-              const PopupMenuItem<int>(
-                value: 2,
-                child: Text('Sort Z-A'),
-              ),
-            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return FilterDialog(
+                    initialFilterOptions: _filterOptions,
+                    selectedBrand: _selectedBrand,
+                    selectedCategory: _selectedCategory,
+                    selectedType: _selectedType,
+                    onApply: (options, newBrand, newCategory, newType) {
+                      // Modify this line
+                      setState(() {
+                        _filterOptions = options;
+                        _selectedBrand = newBrand;
+                        _selectedCategory = newCategory;
+                        _selectedType = newType;
+                        print('New Brand: $_selectedBrand');
+                      });
+                    },
+                    onClear: () {
+                      // Clear filters and refresh product list
+                      refreshProductList(FilterOptions(), null, null,
+                          null); // Pass initialFilterOptions and null for selectedBrand
+                    },
+                  );
+                },
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.add),
@@ -69,93 +194,137 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('products')
-            .where('sellersId', isEqualTo: _getCurrentSellerId())
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final products = snapshot.data!.docs;
-            final currentSellerId =
-                _getCurrentSellerId(); // Get the current seller's sellerId
+      body: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: () async {},
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('products')
+              .where('sellersId', isEqualTo: _getCurrentSellerId())
+              .where('brand', isEqualTo: _selectedBrand)
+              .where('category', isEqualTo: _selectedCategory)
+              .where('type', isEqualTo: _selectedType)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List<QueryDocumentSnapshot<Map<String, dynamic>>> products =
+                  snapshot.data!.docs;
 
-            if (!_sortAscending) {
-              products.sort((a, b) => b['name'].compareTo(a['name']));
-            } else {
-              products.sort((a, b) => a['name'].compareTo(b['name']));
-            }
+              print('Search Text in this place: $_searchText');
+              // Filter based on product name
+              final filteredProducts = products
+                  .where((product) => product['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(_searchText.toLowerCase()))
+                  .toList();
+              final currentSellerId =
+                  _getCurrentSellerId(); // Get the current seller's sellerId
 
-            if (products.isEmpty) {
-              // Display a message when there are no products
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'No products available.',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigate to the AddProductScreen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AddProductScreen(),
-                          ),
-                        ).then((_) {
-                          // Refresh the list of products when returning from the AddProductScreen
-                          setState(() {});
-                        });
-                      },
-                      child: Text('Add Product'),
-                    ),
-                  ],
+              // Apply sorting based on filter options
+              if (_filterOptions.sortAscending) {
+                products.sort((a, b) => a['name'].compareTo(b['name']));
+              } else if (_filterOptions.sortDescending) {
+                products.sort((a, b) => b['name'].compareTo(a['name']));
+              }
+
+              // Apply sorting based on filter options for price
+              if (_filterOptions.sortPriceAscending) {
+                products.sort((a, b) =>
+                    a['discountedPrice'].compareTo(b['discountedPrice']));
+              } else if (_filterOptions.sortPriceDescending) {
+                products.sort((a, b) =>
+                    b['discountedPrice'].compareTo(a['discountedPrice']));
+              }
+
+              // Filter based on price range
+              products = products
+                  .where((product) =>
+                      (_filterOptions.minPrice == null ||
+                          product['discountedPrice'] >=
+                              _filterOptions.minPrice!) &&
+                      (_filterOptions.maxPrice == null ||
+                          product['discountedPrice'] <=
+                              _filterOptions.maxPrice!))
+                  .toList();
+
+              if (products.isEmpty) {
+                // Display a message when there are no products
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'No products available.',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Navigate to the AddProductScreen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddProductScreen(),
+                            ),
+                          ).then((_) {
+                            // Refresh the list of products when returning from the AddProductScreen
+                            setState(() {});
+                          });
+                        },
+                        child: Text('Add Product'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
                 ),
+                itemCount: filteredProducts.length,
+                itemBuilder: (context, index) {
+                  final productData = filteredProducts[index].data();
+                  final productId = filteredProducts[index].id;
+                  final int maxQuantity = productData['quantity'] ?? 0;
+                  final double price = productData['price'];
+                  final double discount = productData['discount'] ?? 0.0;
+                  final double discountedPrice = (1 - discount / 100) * price;
+
+                  // Check if the current seller's sellerId matches the product's sellerId
+                  if (currentSellerId == productData['sellersId']) {
+                    return ProductGridItem(
+                      productName: productData['name'],
+                      imageUrl: productData['imageUrl'],
+                      price: price,
+                      discount: discount,
+                      discountedPrice: discountedPrice,
+                      onTap: () {
+                        _navigateToProductDetails(
+                            productData); // Pass the entire product details
+                      },
+                      onEdit: () {
+                        _navigateToEditProductScreen(productId, productData);
+                      },
+                      onDelete: () {
+                        _deleteProduct(productId);
+                      },
+                    );
+                  } else {
+                    // Product is not added by the current seller, so don't display it
+                    return const SizedBox.shrink();
+                  }
+                },
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
               );
             }
-
-            return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index].data();
-                final productId = products[index].id;
-
-                // Check if the current seller's sellerId matches the product's sellerId
-                if (currentSellerId == product['sellersId']) {
-                  return ProductGridItem(
-                    productName: product['name'],
-                    imageUrl: product['imageUrl'],
-                    price: product['price'],
-                    discount: product['discount'],
-                    discountedPrice: product['discountedPrice'],
-                    onTap: () {
-                      _navigateToProductDetails(
-                          product); // Pass the entire product details
-                    },
-                    onEdit: () {
-                      _navigateToEditProductScreen(productId, product);
-                    },
-                    onDelete: () {
-                      _deleteProduct(productId);
-                    },
-                  );
-                } else {
-                  // Product is not added by the current seller, so don't display it
-                  return const SizedBox.shrink();
-                }
-              },
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        },
+          },
+        ),
       ),
     );
   }

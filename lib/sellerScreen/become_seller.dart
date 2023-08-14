@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/sellerScreen/seller_home.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class SellerRegistrationScreen extends StatefulWidget {
   @override
@@ -20,11 +23,52 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   bool _isSubmitting = false;
+  File? _imageFile;
 
-  void _submitRegistration(BuildContext context, String userId) async {
-    // Validate all text fields
+  Widget _buildImagePreview() {
+    if (_imageFile != null) {
+      return Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          border: Border.all(color: Colors.grey),
+        ),
+        child: Image.file(_imageFile!, fit: BoxFit.cover),
+      );
+    } else {
+      return Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          border: Border.all(color: Colors.grey),
+        ),
+        child: const Center(
+          child: Text('No Image Selected'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedImage = await ImagePicker().pickImage(source: source);
+    if (pickedImage != null) {
+      setState(() {
+        _imageFile = File(pickedImage.path);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: No image selected'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _submitRegistration(BuildContext context, String userId) async {
     if (!_formKey.currentState!.validate() || _isSubmitting) {
-      // Validation failed, return early
       return;
     }
 
@@ -32,48 +76,64 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
       _isSubmitting = true;
     });
 
-    // Get the entered values from the text controllers
     final companyName = companyNameController.text;
     final registrationNumber = registrationNumberController.text;
     final shopName = shopNameController.text;
     final pickupAddress = pickupAddressController.text;
     final email = emailController.text;
     final phoneNumber = phoneNumberController.text;
-    int autoIncrementedNumber = await _getNextAutoIncrementNumber();
-    // Create a new seller document in the "sellers" collection
-    final sellerDocRef =
-        FirebaseFirestore.instance.collection('sellers').doc(userId);
-    await sellerDocRef.set({
-      'id': autoIncrementedNumber,
-      'sellerId': userId,
-      'companyName': companyName,
-      'registrationNumber': registrationNumber,
-      'shopName': shopName,
-      'pickupAddress': pickupAddress,
-      'email': email,
-      'phoneNumber': phoneNumber,
-    });
 
-    // Clear the text fields after submission
-    companyNameController.clear();
-    registrationNumberController.clear();
-    shopNameController.clear();
-    pickupAddressController.clear();
-    emailController.clear();
-    phoneNumberController.clear();
+    try {
+      if (_imageFile != null) {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('sellers_images')
+            .child('$userId.jpg');
+        await storageRef.putFile(File(_imageFile!.path));
+        final imageUrl = await storageRef.getDownloadURL();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Successfully registered as a seller!'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-    await Future.delayed(const Duration(seconds: 2));
-    // Navigate to the seller home screen after registration
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SellerHomeScreen()),
-    );
+        int autoIncrementedNumber = await _getNextAutoIncrementNumber();
+
+        final sellerDocRef =
+            FirebaseFirestore.instance.collection('sellers').doc(userId);
+        await sellerDocRef.set({
+          'id': autoIncrementedNumber,
+          'sellerId': userId,
+          'companyName': companyName,
+          'registrationNumber': registrationNumber,
+          'shopName': shopName,
+          'pickupAddress': pickupAddress,
+          'email': email,
+          'phoneNumber': phoneNumber,
+          'image_url': imageUrl,
+        });
+      }
+
+      companyNameController.clear();
+      registrationNumberController.clear();
+      shopNameController.clear();
+      pickupAddressController.clear();
+      emailController.clear();
+      phoneNumberController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Successfully registered as a seller!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SellerHomeScreen()),
+      );
+    } catch (error) {
+      // Handle errors
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
   }
 
   Future<int> _getNextAutoIncrementNumber() async {
@@ -124,6 +184,21 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (_imageFile != null)
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(File(_imageFile!.path)),
+                  ),
+                const SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                  child: const Text('Pick from Gallery'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _pickImage(ImageSource.camera),
+                  child: const Text('Take Photo'),
+                ),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: companyNameController,
                   decoration: const InputDecoration(labelText: 'Company Name'),

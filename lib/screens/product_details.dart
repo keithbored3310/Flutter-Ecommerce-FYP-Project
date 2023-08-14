@@ -1,4 +1,5 @@
 import 'package:ecommerce/screens/cart_screen.dart';
+import 'package:ecommerce/screens/sellers_home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -155,6 +156,78 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     return null;
   }
 
+  Widget _buildSellerInfoBox(BuildContext context) {
+    final sellerId = widget.productData['sellersId'];
+
+    return GestureDetector(
+      onTap: () {
+        // Redirect to seller's homepage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SellerHomePage(sellerId: sellerId),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          future: FirebaseFirestore.instance
+              .collection('sellers')
+              .doc(sellerId)
+              .get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Text('Seller Not Found');
+            }
+
+            final sellerData = snapshot.data!.data()!;
+            final shopName = sellerData['shopName'];
+            final imageUrl =
+                sellerData['image_url'] ?? ''; // Fetch the imageUrl
+            ImageProvider<Object>? avatarImage;
+
+            if (imageUrl.isNotEmpty) {
+              avatarImage = NetworkImage(imageUrl);
+            } else {
+              final defaultAvatarImage =
+                  AssetImage('assets/images/default-avatar.png');
+              avatarImage = defaultAvatarImage;
+            }
+
+            return Row(
+              // Wrap in a Row
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: avatarImage,
+                ),
+                const SizedBox(
+                    width:
+                        16), // Add some spacing between CircleAvatar and Text
+                Text(
+                  shopName,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double price = widget.productData['price'];
@@ -171,7 +244,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
+                MaterialPageRoute(builder: (context) => CartScreen()),
               );
             },
           ),
@@ -231,6 +304,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                 ],
               ),
             ),
+            _buildSellerInfoBox(context),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -261,7 +335,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(8.0),
               child: GridView.count(
                 crossAxisCount: 3,
                 shrinkWrap: true,
@@ -273,7 +347,6 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                 ],
               ),
             ),
-            // Add more product details as needed
           ],
         ),
       ),
