@@ -1,8 +1,10 @@
+import 'package:ecommerce/userScreen/review_page.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/screens/order_confirmation.dart';
-import 'package:flutter/material.dart';
+import 'package:ecommerce/userScreen/order_detail_page.dart';
 
-class DeliveryStatusPage extends StatelessWidget {
+class DeliveryStatusPage extends StatefulWidget {
   final String title;
   final String userUid;
 
@@ -12,32 +14,108 @@ class DeliveryStatusPage extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  Future<List<String>> fetchOrderIds() async {
+  @override
+  _DeliveryStatusPageState createState() => _DeliveryStatusPageState();
+}
+
+class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
+  late List<Map<String, dynamic>> userOrdersData;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserOrders();
+  }
+
+  Future<void> fetchUserOrders() async {
+    userOrdersData = [];
+
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('orders')
-        .where('userId', isEqualTo: userUid)
-        .where('status', isEqualTo: getStatusFromTitle(title))
-        .orderBy('timestamp', descending: true)
+        .where('userId', isEqualTo: widget.userUid)
         .get();
 
-    List<String> orderIds = querySnapshot.docs.map((doc) => doc.id).toList();
-    return orderIds;
+    for (var orderDoc in querySnapshot.docs) {
+      String orderId = orderDoc.id;
+
+      QuerySnapshot userOrdersQuerySnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .collection('userOrders')
+          .where('userId', isEqualTo: widget.userUid)
+          .get();
+
+      userOrdersData.addAll(userOrdersQuerySnapshot.docs.map((userOrderDoc) {
+        return userOrderDoc.data() as Map<String, dynamic>;
+      }));
+    }
+
+    if (mounted) {
+      setState(() {
+        // Update the UI after fetching user orders
+      });
+    }
+  }
+
+  Future<List<DocumentSnapshot>> fetchOrdersAndUserOrders(int status) async {
+    List<DocumentSnapshot> ordersAndUserOrders = [];
+
+    if (status == 1) {
+      print('enter status 1');
+
+      // Fetch the document IDs of orders that match the criteria
+      QuerySnapshot orderIdsQuerySnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('userId', isEqualTo: widget.userUid)
+          .get();
+
+      // Fetch userOrders using the retrieved order IDs
+      for (var orderDoc in orderIdsQuerySnapshot.docs) {
+        String orderId = orderDoc.id;
+
+        QuerySnapshot userOrdersQuerySnapshot = await FirebaseFirestore.instance
+            .collection('orders')
+            .doc(orderId)
+            .collection('userOrders')
+            .where('userId', isEqualTo: widget.userUid)
+            .where('status', isEqualTo: status)
+            .orderBy('timestamp', descending: true)
+            .get();
+
+        ordersAndUserOrders.addAll(userOrdersQuerySnapshot.docs);
+      }
+
+      print('ordersAndUserOrders: $ordersAndUserOrders');
+    } else {
+      print('enter status = $status');
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collectionGroup('userOrders')
+          .where('userId', isEqualTo: widget.userUid)
+          .where('status', isEqualTo: status)
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      ordersAndUserOrders.addAll(querySnapshot.docs);
+    }
+    return ordersAndUserOrders;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: fetchOrderIds(),
-      builder: (context, orderIdsSnapshot) {
-        if (orderIdsSnapshot.connectionState == ConnectionState.waiting) {
+    return FutureBuilder<List<DocumentSnapshot>>(
+      future: fetchOrdersAndUserOrders(getStatusFromTitle(widget.title)),
+      builder: (context, ordersAndUserOrdersSnapshot) {
+        if (ordersAndUserOrdersSnapshot.connectionState ==
+            ConnectionState.waiting) {
           return CircularProgressIndicator();
-        } else if (!orderIdsSnapshot.hasData ||
-            orderIdsSnapshot.data!.isEmpty) {
+        } else if (!ordersAndUserOrdersSnapshot.hasData ||
+            ordersAndUserOrdersSnapshot.data!.isEmpty) {
           return Center(
             child: Text('No orders available.'),
           );
         } else {
-          List<String> orderIds = orderIdsSnapshot.data!;
+          List<DocumentSnapshot> ordersAndUserOrders =
+              ordersAndUserOrdersSnapshot.data!;
 
           return SingleChildScrollView(
             child: Column(
@@ -51,173 +129,183 @@ class DeliveryStatusPage extends StatelessWidget {
                   ),
                 ),
                 Column(
-                  children: orderIds.map(
-                    (orderId) {
-                      return StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('orders')
-                            .doc(orderId)
-                            .collection('userOrders')
-                            .where('userId', isEqualTo: userUid)
-                            .snapshots(),
-                        builder: (context, userOrderSnapshot) {
-                          if (userOrderSnapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (!userOrderSnapshot.hasData ||
-                              userOrderSnapshot.data!.docs.isEmpty) {
-                            return SizedBox();
-                          } else {
-                            double totalOrderPrice = 0;
+                  children: ordersAndUserOrders.map(
+                    (orderOrUserOrder) {
+                      var data =
+                          orderOrUserOrder.data() as Map<String, dynamic>;
+                      int orderStatus = data['status'];
 
-                            List<Widget> userOrderWidgets = [];
+                      if (orderStatus == 1) {
+                        String orderId = data['orderId'] as String;
 
-                            for (var order in userOrderSnapshot.data!.docs) {
-                              totalOrderPrice += order['itemTotalPrice'];
-                              userOrderWidgets.add(
-                                Column(
+                        return ListTile(
+                          leading: Image.network(data['imageUrl']),
+                          title: Text(data['productName']),
+                          subtitle: Text(
+                            'Quantity: ${data['quantity']}\nTotal Price: RM${data['itemTotalPrice'].toStringAsFixed(2)}',
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OrderConfirmationScreen(
+                                    orderId: orderId,
+                                    userUid: widget.userUid,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text('Pay Now'),
+                          ),
+                        );
+                      } else {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OrderDetailsPage(
+                                  orderId: data['orderId'],
+                                  userOrderId: data['userOrderId'],
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              ListTile(
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Divider(),
-                                    ListTile(
-                                      leading: Image.network(order['imageUrl']),
-                                      title: Text(order['productName']),
-                                      subtitle: Text(
-                                        'Quantity: ${order['quantity']}\nTotal Price: RM${order['itemTotalPrice'].toStringAsFixed(2)}',
+                                    Text(
+                                      data['shopName'],
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
+                                    ),
+                                    Text(
+                                      orderStatus == 2
+                                          ? 'To Ship'
+                                          : orderStatus == 3
+                                              ? 'To Receive'
+                                              : 'Complete',
                                     ),
                                   ],
                                 ),
-                              );
-                            }
-
-                            int orderStatus =
-                                userOrderSnapshot.data!.docs[0]['status'];
-
-                            if (orderStatus == 1) {
-                              // Display existing widget for status 1
-                              return Column(
-                                children: [
-                                  ...userOrderWidgets,
-                                  SizedBox(height: 20),
-                                  Text(
-                                    'Total Order Price: RM${totalOrderPrice.toStringAsFixed(2)}',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                  SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              OrderConfirmationScreen(
-                                            orderId: orderId,
-                                            userUid: userUid,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Text('Pay Now'),
-                                  ),
-                                ],
-                              );
-                            } else if (orderStatus == 2 ||
-                                orderStatus == 3 ||
-                                orderStatus == 4) {
-                              // Display grid layout for status 2, 3, 4
-                              return Column(
-                                children: userOrderSnapshot.data!.docs.map(
-                                  (userOrderDoc) {
-                                    var shopName = userOrderDoc['shopName'];
-                                    return Column(
-                                      children: [
-                                        Divider(),
-                                        ListTile(
-                                          title: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                '$shopName',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                leading: Image.network(data['imageUrl']),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Quantity: ${data['quantity']}',
+                                    ),
+                                    Text(
+                                      'Total Price: RM${data['itemTotalPrice'].toStringAsFixed(2)}',
+                                    ),
+                                    StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('orders')
+                                          .doc(data['orderId'])
+                                          .collection('userOrders')
+                                          .doc(orderOrUserOrder.id)
+                                          .collection('deliveryMessage')
+                                          .orderBy('timestamp',
+                                              descending: true)
+                                          .limit(1)
+                                          .snapshots(),
+                                      builder:
+                                          (context, deliveryMessageSnapshot) {
+                                        if (deliveryMessageSnapshot
+                                                .connectionState ==
+                                            ConnectionState.waiting) {
+                                          return CircularProgressIndicator();
+                                        } else if (!deliveryMessageSnapshot
+                                                .hasData ||
+                                            deliveryMessageSnapshot
+                                                .data!.docs.isEmpty) {
+                                          return SizedBox();
+                                        } else {
+                                          var deliveryMessage =
+                                              deliveryMessageSnapshot
+                                                  .data!.docs[0]['message'];
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            child: Text(
+                                              '$deliveryMessage',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontStyle: FontStyle.italic,
                                               ),
-                                              Text(
-                                                orderStatus == 2
-                                                    ? 'To Ship'
-                                                    : orderStatus == 3
-                                                        ? 'To Receive'
-                                                        : 'Complete',
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (orderStatus == 3)
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    // Update the status in the userOrders subcollection to 4
+                                    await FirebaseFirestore.instance
+                                        .collection('orders')
+                                        .doc(data[
+                                            'orderId']) // Use the orderId to access the order document
+                                        .collection('userOrders')
+                                        .doc(orderOrUserOrder
+                                            .id) // Use the userOrderId to access the userOrder document
+                                        .update({'status': 4});
+
+                                    // You might want to add additional code here if needed
+                                    await FirebaseFirestore.instance
+                                        .collection('reviews')
+                                        .add({
+                                      'userId': data['userId'],
+                                      'orderId': data['orderId'],
+                                      'userOrderId': data['userOrderId'],
+                                      'username': data['username'],
+                                      'imageUrl': data['imageUrl'],
+                                      'productName': data['productName'],
+                                      'sellerId': data['sellerId'],
+                                      'shopname': data['shopName'],
+                                      'timestamp': data['timestamp'],
+                                      'status': data['status'],
+                                      'quantity': data['quantity'],
+                                      'productId': data['productId'],
+                                      'orderReceived': true,
+                                    });
+
+                                    setState(() {
+                                      // Update any relevant variables or states here
+                                    });
+                                  },
+                                  child: Text('Order Received'),
+                                ),
+                              if (orderStatus == 4 &&
+                                  !(data['isRated'] ?? false))
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ReviewPage(
+                                          orderId: data['orderId'],
+                                          userOrderId: data['userOrderId'],
                                         ),
-                                        Divider(),
-                                        ListTile(
-                                          leading: Image.network(
-                                              userOrderDoc['imageUrl']),
-                                          title:
-                                              Text(userOrderDoc['productName']),
-                                          subtitle: Text(
-                                              'Quantity: ${userOrderDoc['quantity']}\nTotal Price: RM${userOrderDoc['itemTotalPrice'].toStringAsFixed(2)}'),
-                                        ),
-                                        Divider(),
-                                        StreamBuilder<QuerySnapshot>(
-                                          stream: FirebaseFirestore.instance
-                                              .collection('orders')
-                                              .doc(orderId)
-                                              .collection('userOrders')
-                                              .doc(userOrderDoc.id)
-                                              .collection('deliveryMessage')
-                                              .orderBy('timestamp',
-                                                  descending: true)
-                                              .limit(1)
-                                              .snapshots(),
-                                          builder: (context,
-                                              deliveryMessageSnapshot) {
-                                            if (deliveryMessageSnapshot
-                                                    .connectionState ==
-                                                ConnectionState.waiting) {
-                                              return CircularProgressIndicator();
-                                            } else if (!deliveryMessageSnapshot
-                                                    .hasData ||
-                                                deliveryMessageSnapshot
-                                                    .data!.docs.isEmpty) {
-                                              return SizedBox();
-                                            } else {
-                                              var deliveryMessage =
-                                                  deliveryMessageSnapshot
-                                                      .data!.docs[0]['message'];
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8),
-                                                child: Text(
-                                                  '$deliveryMessage',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontStyle: FontStyle.italic,
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        Divider(),
-                                        // Add button based on orderStatus
-                                      ],
+                                      ),
                                     );
                                   },
-                                ).toList(),
-                              );
-                            }
-
-                            return SizedBox(); // Default case
-                          }
-                        },
-                      );
+                                  child: Text('Rate'),
+                                ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                   ).toList(),
                 ),

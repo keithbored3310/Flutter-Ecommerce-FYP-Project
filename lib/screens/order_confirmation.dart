@@ -113,7 +113,35 @@ class OrderConfirmationScreen extends StatelessWidget {
                       SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () async {
+                          final userOrdersQuerySnapshot =
+                              await FirebaseFirestore.instance
+                                  .collection('orders')
+                                  .doc(orderId)
+                                  .collection('userOrders')
+                                  .where('status', isEqualTo: 1)
+                                  .where('userId', isEqualTo: userUid)
+                                  .get();
+
                           final batch = FirebaseFirestore.instance.batch();
+
+                          // Add orderId to the 'orders' document
+                          batch.update(
+                            FirebaseFirestore.instance
+                                .collection('orders')
+                                .doc(orderId),
+                            {'orderId': orderId},
+                          );
+
+                          for (final userOrderDoc
+                              in userOrdersQuerySnapshot.docs) {
+                            final userOrderId = userOrderDoc.id;
+
+                            // Update the userOrder document with a new field 'userOrderId'
+                            batch.update(
+                              userOrderDoc.reference,
+                              {'userOrderId': userOrderId},
+                            );
+                          }
 
                           batch.update(
                             FirebaseFirestore.instance

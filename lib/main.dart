@@ -14,7 +14,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await deleteOldPendingOrders();
+  // await deleteOldPendingOrders();
   runApp(const MyApp());
 }
 

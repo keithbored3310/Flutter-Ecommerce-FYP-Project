@@ -1,107 +1,49 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/widget/courier_drop_down.dart';
+import 'package:flutter/material.dart';
+import 'dart:math';
 
 class ManageOrderPage extends StatefulWidget {
   final String sellerId;
 
-  const ManageOrderPage({required this.sellerId});
+  const ManageOrderPage({super.key, required this.sellerId});
 
   @override
-  _ManageOrderPageState createState() => _ManageOrderPageState();
+  State<ManageOrderPage> createState() {
+    return _ManageOrderPageState();
+  }
 }
 
 class _ManageOrderPageState extends State<ManageOrderPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Manage Orders'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collectionGroup('userOrders')
-            .snapshots(),
-        builder: (context, userOrdersSnapshot) {
-          if (userOrdersSnapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (!userOrdersSnapshot.hasData ||
-              userOrdersSnapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text('No orders available.'),
-            );
-          } else {
-            // Filter the documents based on sellerId
-            var matchingOrders =
-                userOrdersSnapshot.data!.docs.where((userOrderDoc) {
-              String orderSellerId = userOrderDoc['sellerId'];
-              return orderSellerId == widget.sellerId;
-            }).toList();
+  String? _selectedCourier; // Add this line to your _ManageOrderPageState
 
-            return ListView.builder(
-              itemCount: matchingOrders.length,
-              itemBuilder: (context, index) {
-                var orderData =
-                    matchingOrders[index].data() as Map<String, dynamic>;
-                String orderId = matchingOrders[index].id;
-                String username = orderData['username'];
-                String imageUrl = orderData['imageUrl'];
-                int quantity = orderData['quantity'];
-                String productName = orderData['productName'];
-                double itemTotalPrice = orderData['itemTotalPrice'];
-                int status = orderData['status'];
+  void updateSelectedCourier(String? courier) {
+    setState(() {
+      _selectedCourier = courier;
+    });
+  }
 
-                return Column(
-                  children: [
-                    ListTile(
-                      leading: SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: Image.network(imageUrl),
-                      ),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Product: $productName'),
-                              Text(
-                                  'Total Price: RM${itemTotalPrice.toStringAsFixed(2)}'),
-                              Text('Status: ${getStatusText(status)}'),
-                              Text('Quantity: $quantity'),
-                            ],
-                          ),
-                          if (status == 2)
-                            IconButton(
-                              onPressed: () {
-                                // Handle ship button click
-                                // For example, mark the order as shipped
-                              },
-                              icon: Icon(Icons.local_shipping),
-                            ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Username: $username'),
-                          Text('Order ID: $orderId'),
-                        ],
-                      ),
-                    ),
-                    Divider(
-                      height: 1, // Adjust the height of the divider as needed
-                      color: Colors.grey, // Set the color of the divider
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        },
-      ),
-    );
+  Future<QuerySnapshot<Map<String, dynamic>>> _getUserOrders() async {
+    try {
+      final QuerySnapshot<Map<String, dynamic>> userOrdersSnapshot =
+          await FirebaseFirestore.instance
+              .collectionGroup('userOrders')
+              .where('sellerId', isEqualTo: widget.sellerId)
+              .where('status', whereIn: [2, 3, 4]).get();
+      return userOrdersSnapshot;
+    } catch (error) {
+      print('Error fetching user orders: $error');
+      throw error;
+    }
+  }
+
+  String generateTrackingId() {
+    Random random = Random();
+    String trackingId = '';
+    for (int i = 0; i < 16; i++) {
+      trackingId += random.nextInt(10).toString();
+    }
+    return trackingId;
   }
 
   String getStatusText(int status) {
@@ -113,7 +55,181 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
       case 4:
         return 'Completed';
       default:
-        return 'Unknown';
+        return 'Unknown'; // Handle other status values if needed
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Manage Orders for Seller'),
+      ),
+      body: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        future: _getUserOrders(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else if (!snapshot.hasData || snapshot.data!.size == 0) {
+            return Text('No data available');
+          } else {
+            final userOrders = snapshot.data!.docs;
+
+            return ListView(
+              children: ListTile.divideTiles(
+                context: context,
+                tiles: userOrders.map(
+                  (userOrder) {
+                    final userOrderData = userOrder.data();
+                    final userOrderId = userOrderData['userOrderId'];
+                    final imageUrl = userOrderData['imageUrl'];
+                    final username = userOrderData['username'];
+                    final phone = userOrderData['phone'];
+                    final address = userOrderData['address'];
+                    final timestamp = userOrderData['timestamp'].toDate();
+                    final productName = userOrderData['productName'];
+                    final quantity = userOrderData['quantity'];
+                    final itemTotalPrice = userOrderData['itemTotalPrice'];
+                    final status = userOrderData['status'];
+
+                    final statusColumn = status == 2
+                        ? IconButton(
+                            icon: Icon(Icons.local_shipping),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text('Select Courier'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CourierDropdown(
+                                          selectedCourier: _selectedCourier,
+                                          onCourierChanged:
+                                              updateSelectedCourier,
+                                        ),
+                                        SizedBox(height: 20),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                String newTrackingId =
+                                                    generateTrackingId();
+                                                final userOrderIdToUpdate =
+                                                    userOrderData[
+                                                        'userOrderId'];
+                                                final orderId =
+                                                    userOrderData['orderId'];
+                                                final DateTime now =
+                                                    DateTime.now();
+
+                                                final newStatus =
+                                                    3; // Status to update
+
+                                                try {
+                                                  // Update the status in Firestore
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('orders')
+                                                      .doc(orderId)
+                                                      .collection('userOrders')
+                                                      .doc(userOrderIdToUpdate)
+                                                      .update({
+                                                    'status': newStatus,
+                                                    'trackingId': newTrackingId,
+                                                    'selectedCourier':
+                                                        _selectedCourier,
+                                                  });
+
+                                                  // Add a new document to the deliveryMessage subcollection
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('orders')
+                                                      .doc(orderId)
+                                                      .collection('userOrders')
+                                                      .doc(userOrderIdToUpdate)
+                                                      .collection(
+                                                          'deliveryMessage')
+                                                      .add({
+                                                    'message':
+                                                        'Seller is shipped out the parcel',
+                                                    'timestamp': now,
+                                                  });
+
+                                                  // Show a snackbar and pop the dialog
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                          'Item is shipped.'),
+                                                    ),
+                                                  );
+                                                  Navigator.pop(
+                                                      context); // Close the dialog
+                                                } catch (error) {
+                                                  print(
+                                                      'Error updating status: $error');
+                                                  // Handle error
+                                                }
+                                              },
+                                              child: Text('Ship'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(
+                                                    context); // Close the dialog
+                                              },
+                                              child: Text('Cancel'),
+                                              style: ElevatedButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : IconButton(
+                            icon: Icon(Icons.local_shipping),
+                            onPressed:
+                                null, // Set onPressed to null when status is not 2
+                            color: Colors.grey, // Change the color of the icon
+                          );
+
+                    return ListTile(
+                      leading: Image.network(imageUrl),
+                      title: Text('Username: $username'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Phone: $phone'),
+                          Text('Address: $address'),
+                          Text('User Order ID: $userOrderId'),
+                          Text('Date: ${timestamp.toString().split(' ')[0]}'),
+                          Text('Product: $productName'),
+                          Text('Quantity: $quantity'),
+                          Text('Total Price: $itemTotalPrice'),
+                          Text('Status: ${getStatusText(status)}'),
+                        ],
+                      ),
+                      trailing: statusColumn,
+                    );
+                  },
+                ),
+              ).toList(),
+            );
+          }
+        },
+      ),
+    );
   }
 }

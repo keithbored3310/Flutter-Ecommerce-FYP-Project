@@ -134,7 +134,7 @@ class _CartScreenState extends State<CartScreen> {
       'status': 1, // Status for pending
       'timestamp': FieldValue.serverTimestamp(),
     });
-
+    String orderId = orderRef.id;
     // Iterate through selected items
     for (var itemId in selectedItems) {
       DocumentSnapshot cartItemSnapshot = await FirebaseFirestore.instance
@@ -155,6 +155,7 @@ class _CartScreenState extends State<CartScreen> {
 
       // Create order document in the userOrders subcollection
       await orderRef.collection('userOrders').add({
+        'orderId': orderId,
         'productId': productId,
         'quantity': cartQuantity,
         'itemTotalPrice': itemTotalPrice,
