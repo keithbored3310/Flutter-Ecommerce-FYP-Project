@@ -1,3 +1,4 @@
+import 'package:ecommerce/userScreen/delivery_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -5,22 +6,23 @@ class OrderConfirmationScreen extends StatelessWidget {
   final String orderId;
   final String userUid;
 
-  OrderConfirmationScreen({required this.orderId, required this.userUid});
+  const OrderConfirmationScreen(
+      {super.key, required this.orderId, required this.userUid});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Confirmation'),
+        title: const Text('Order Confirmation'),
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future:
             FirebaseFirestore.instance.collection('users').doc(userUid).get(),
         builder: (context, userSnapshot) {
           if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-            return Center(child: Text('User data not available.'));
+            return const Center(child: Text('User data not available.'));
           } else {
             var userData = userSnapshot.data!.data() as Map<String, dynamic>;
             String username = userData['username'];
@@ -37,9 +39,9 @@ class OrderConfirmationScreen extends StatelessWidget {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No orders available.'));
+                  return const Center(child: Text('No orders available.'));
                 } else {
                   double totalOrderPrice = 0;
                   int amountOfUserOrders = snapshot.data!.docs.length;
@@ -52,14 +54,16 @@ class OrderConfirmationScreen extends StatelessWidget {
                   double finalPrice = totalOrderPrice + shippingFees;
 
                   return ListView(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     children: [
-                      Text('Shipping Details', style: TextStyle(fontSize: 20)),
+                      const Text('Shipping Details',
+                          style: TextStyle(fontSize: 20)),
                       Text('Username: $username'),
                       Text('Address: $address'),
                       Text('Phone: $phone'),
-                      Divider(),
-                      Text('User Orders:', style: TextStyle(fontSize: 20)),
+                      const Divider(),
+                      const Text('User Orders:',
+                          style: TextStyle(fontSize: 20)),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: snapshot.data!.docs.map((order) {
@@ -78,7 +82,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                             builder: (context, sellerSnapshot) {
                               if (sellerSnapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return Center(
+                                return const Center(
                                     child: CircularProgressIndicator());
                               } else if (!sellerSnapshot.hasData ||
                                   !sellerSnapshot.data!.exists) {
@@ -102,17 +106,25 @@ class OrderConfirmationScreen extends StatelessWidget {
                           );
                         }).toList(),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text('Amount of User Orders: $amountOfUserOrders'),
                       Text(
                           'Total Order Price: RM${totalOrderPrice.toStringAsFixed(2)}'),
                       Text(
                           'Shipping Fees: RM${shippingFees.toStringAsFixed(2)}'),
-                      Divider(),
+                      const Divider(),
                       Text('Final Price: RM${finalPrice.toStringAsFixed(2)}'),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+
                           final userOrdersQuerySnapshot =
                               await FirebaseFirestore.instance
                                   .collection('orders')
@@ -253,11 +265,23 @@ class OrderConfirmationScreen extends StatelessWidget {
                           // Commit the updates to 'deliveryMessage'
                           await deliveryMessageBatch.commit();
 
-                          // Navigate back to TabsScreen
-                          Navigator.of(context)
-                              .popUntil((route) => route.isFirst);
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Payment successful!'),
+                            ),
+                          );
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const DeliveryPage(initialTabIndex: 1),
+                            ),
+                          );
                         },
-                        child: Text('Pay'),
+                        child: const Text('Pay'),
                       ),
                     ],
                   );

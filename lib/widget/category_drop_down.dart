@@ -12,7 +12,7 @@ class CategoryDropdown extends StatefulWidget {
   final ValueChanged<String?> onCategoryChanged;
 
   @override
-  _CategoryDropdownState createState() => _CategoryDropdownState();
+  State<CategoryDropdown> createState() => _CategoryDropdownState();
 }
 
 class _CategoryDropdownState extends State<CategoryDropdown> {

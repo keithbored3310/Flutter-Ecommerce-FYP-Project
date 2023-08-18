@@ -6,14 +6,15 @@ class AddToCartDialog extends StatefulWidget {
   final String productId; // Add productId parameter
   final String userId;
 
-  AddToCartDialog({
+  const AddToCartDialog({
+    super.key,
     required this.maxQuantity,
     required this.productId, // Add productId parameter
     required this.userId,
   });
 
   @override
-  _AddToCartDialogState createState() => _AddToCartDialogState();
+  State<AddToCartDialog> createState() => _AddToCartDialogState();
 }
 
 class _AddToCartDialogState extends State<AddToCartDialog> {
@@ -110,7 +111,6 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
 
                   // Use the passed productId directly
                   String productId = widget.productId;
-                  print('Product ID: $productId');
 
                   // Add the logic to handle adding to cart here
                   // You can use the 'quantity', 'productId', 'widget.userId', and other necessary data

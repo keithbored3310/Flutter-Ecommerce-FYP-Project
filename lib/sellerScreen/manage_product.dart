@@ -12,16 +12,15 @@ class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
 
   @override
-  _ProductListScreenState createState() => _ProductListScreenState();
+  State<ProductListScreen> createState() => _ProductListScreenState();
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   String _searchText = '';
   List<Map<String, dynamic>> products = [];
   FilterOptions _filterOptions = FilterOptions();
-  bool _sortAscending = true;
   String? _selectedBrand;
   String? _selectedCategory;
   String? _selectedType;
@@ -31,40 +30,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
       return user.uid;
     }
     return null;
-  }
-
-  Widget _searchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      height: kToolbarHeight - 8,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.grey,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.search),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value;
-                  print('Search Text: $_searchText');
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search product...',
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> refreshProductList(
@@ -80,6 +45,35 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
   }
 
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>
+      getFilteredAndSortedProducts(
+          List<QueryDocumentSnapshot<Map<String, dynamic>>> products) {
+    // Apply sorting based on filter options
+    if (_filterOptions.sortAscending) {
+      products.sort((a, b) => a['name'].compareTo(b['name']));
+    } else if (_filterOptions.sortDescending) {
+      products.sort((a, b) => b['name'].compareTo(a['name']));
+    }
+
+    // Apply sorting based on filter options for price
+    if (_filterOptions.sortPriceAscending) {
+      products
+          .sort((a, b) => a['discountedPrice'].compareTo(b['discountedPrice']));
+    } else if (_filterOptions.sortPriceDescending) {
+      products
+          .sort((a, b) => b['discountedPrice'].compareTo(a['discountedPrice']));
+    }
+
+    // Filter based on price range
+    return products
+        .where((product) =>
+            (_filterOptions.minPrice == null ||
+                product['discountedPrice'] >= _filterOptions.minPrice!) &&
+            (_filterOptions.maxPrice == null ||
+                product['discountedPrice'] <= _filterOptions.maxPrice!))
+        .toList();
+  }
+
   Future<void> _showSearchDialog() async {
     final searchController = TextEditingController(
         text: _searchText); // Initialize with current search text
@@ -91,7 +85,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           title: const Text('Search Product'),
           content: TextField(
             controller: searchController,
-            decoration: InputDecoration(hintText: 'Enter product name'),
+            decoration: const InputDecoration(hintText: 'Enter product name'),
           ),
           actions: [
             TextButton(
@@ -141,7 +135,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         title: _searchText.isEmpty ? const Text('Product List') : null,
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               _showSearchDialog();
             },
@@ -164,7 +158,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         _selectedBrand = newBrand;
                         _selectedCategory = newCategory;
                         _selectedType = newType;
-                        print('New Brand: $_selectedBrand');
                       });
                     },
                     onClear: () {
@@ -221,32 +214,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
               final currentSellerId =
                   _getCurrentSellerId(); // Get the current seller's sellerId
 
-              // Apply sorting based on filter options
-              if (_filterOptions.sortAscending) {
-                products.sort((a, b) => a['name'].compareTo(b['name']));
-              } else if (_filterOptions.sortDescending) {
-                products.sort((a, b) => b['name'].compareTo(a['name']));
-              }
-
-              // Apply sorting based on filter options for price
-              if (_filterOptions.sortPriceAscending) {
-                products.sort((a, b) =>
-                    a['discountedPrice'].compareTo(b['discountedPrice']));
-              } else if (_filterOptions.sortPriceDescending) {
-                products.sort((a, b) =>
-                    b['discountedPrice'].compareTo(a['discountedPrice']));
-              }
-
-              // Filter based on price range
-              products = products
-                  .where((product) =>
-                      (_filterOptions.minPrice == null ||
-                          product['discountedPrice'] >=
-                              _filterOptions.minPrice!) &&
-                      (_filterOptions.maxPrice == null ||
-                          product['discountedPrice'] <=
-                              _filterOptions.maxPrice!))
-                  .toList();
+              final sortedAndFilteredProducts =
+                  getFilteredAndSortedProducts(filteredProducts);
 
               if (products.isEmpty) {
                 // Display a message when there are no products
@@ -254,7 +223,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         'No products available.',
                         style: TextStyle(fontSize: 18),
                       ),
@@ -271,7 +240,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             setState(() {});
                           });
                         },
-                        child: Text('Add Product'),
+                        child: const Text('Add Product'),
                       ),
                     ],
                   ),
@@ -284,11 +253,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                 ),
-                itemCount: filteredProducts.length,
+                itemCount: sortedAndFilteredProducts.length,
                 itemBuilder: (context, index) {
-                  final productData = filteredProducts[index].data();
-                  final productId = filteredProducts[index].id;
-                  final int maxQuantity = productData['quantity'] ?? 0;
+                  final productData = sortedAndFilteredProducts[index].data();
+                  final productId = sortedAndFilteredProducts[index].id;
                   final double price = productData['price'];
                   final double discount = productData['discount'] ?? 0.0;
                   final double discountedPrice = (1 - discount / 100) * price;
@@ -337,16 +305,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
     );
   }
-
-  // Method to navigate to the AddProductScreen
-  // void _navigateToAddProductScreen() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => AddProductScreen(),
-  //     ),
-  //   );
-  // }
 
   void _navigateToEditProductScreen(
       String productId, Map<String, dynamic> productData) {
@@ -418,7 +376,7 @@ class ProductGridItem extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  ProductGridItem({
+  const ProductGridItem({
     required this.productName,
     required this.imageUrl,
     required this.price,
@@ -427,6 +385,7 @@ class ProductGridItem extends StatelessWidget {
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    super.key,
   });
 
   @override

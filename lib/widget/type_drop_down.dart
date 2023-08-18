@@ -12,7 +12,7 @@ class TypeDropdown extends StatefulWidget {
   final ValueChanged<String?> onTypeChanged;
 
   @override
-  _TypeDropdownState createState() => _TypeDropdownState();
+  State<TypeDropdown> createState() => _TypeDropdownState();
 }
 
 class _TypeDropdownState extends State<TypeDropdown> {

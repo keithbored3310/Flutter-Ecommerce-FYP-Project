@@ -3,16 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CourierDropdown extends StatefulWidget {
   const CourierDropdown({
-    Key? key,
+    super.key,
     required this.onCourierChanged,
     required this.selectedCourier,
-  }) : super(key: key);
+  });
 
   final String? selectedCourier;
   final ValueChanged<String?> onCourierChanged;
 
   @override
-  _CourierDropdownState createState() => _CourierDropdownState();
+  State<CourierDropdown> createState() => _CourierDropdownState();
 }
 
 class _CourierDropdownState extends State<CourierDropdown> {

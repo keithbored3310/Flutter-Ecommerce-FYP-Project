@@ -3,42 +3,47 @@ import 'package:flutter/material.dart';
 class DeliveryButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onPressed; // Define the onPressed callback here
+  final int count; // Add this parameter
+  final VoidCallback onPressed;
 
   const DeliveryButton({
+    super.key,
     required this.icon,
     required this.label,
-    required this.onPressed, // Pass the callback to the constructor
-    Key? key,
-  }) : super(key: key);
+    required this.count, // Add this parameter
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.background,
-      ),
-      margin: const EdgeInsets.only(right: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(icon),
-            onPressed: onPressed, // Use the onPressed callback here
-          ),
-          Flexible(
-            // Wrap the Text widget with GestureDetector
-            child: GestureDetector(
-              onTap: onPressed, // Use the onPressed callback here
-              child: Text(
-                label,
-                style: const TextStyle(),
-                textAlign: TextAlign.center,
-              ),
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.topRight,
+          children: [
+            IconButton(
+              onPressed: onPressed,
+              icon: Icon(icon),
             ),
-          ),
-        ],
-      ),
+            if (count > 0)
+              Positioned(
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Text(
+                    count.toString(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        Text(label),
+      ],
     );
   }
 }

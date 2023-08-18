@@ -6,16 +6,14 @@ import 'dart:math';
 class ManageOrderPage extends StatefulWidget {
   final String sellerId;
 
-  const ManageOrderPage({super.key, required this.sellerId});
+  const ManageOrderPage({required this.sellerId});
 
   @override
-  State<ManageOrderPage> createState() {
-    return _ManageOrderPageState();
-  }
+  State<ManageOrderPage> createState() => _ManageOrderPageState();
 }
 
 class _ManageOrderPageState extends State<ManageOrderPage> {
-  String? _selectedCourier; // Add this line to your _ManageOrderPageState
+  String? _selectedCourier;
 
   void updateSelectedCourier(String? courier) {
     setState(() {
@@ -23,17 +21,35 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
     });
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> _getUserOrders() async {
+  Stream<QuerySnapshot<Map<String, dynamic>>> _userOrdersStream() {
+    return FirebaseFirestore.instance
+        .collectionGroup('userOrders')
+        .where('sellerId', isEqualTo: widget.sellerId)
+        .where('status', whereIn: [2, 3, 4]).snapshots();
+  }
+
+  void _updateOrderStatus(
+    String orderId,
+    String userOrderId,
+    int newStatus,
+    String newTrackingId,
+    String selectedCourier,
+  ) async {
     try {
-      final QuerySnapshot<Map<String, dynamic>> userOrdersSnapshot =
-          await FirebaseFirestore.instance
-              .collectionGroup('userOrders')
-              .where('sellerId', isEqualTo: widget.sellerId)
-              .where('status', whereIn: [2, 3, 4]).get();
-      return userOrdersSnapshot;
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .collection('userOrders')
+          .doc(userOrderId)
+          .update({
+        'status': newStatus,
+        'trackingId': newTrackingId,
+        'selectedCourier': selectedCourier,
+        // ... other fields to update
+      });
     } catch (error) {
-      print('Error fetching user orders: $error');
-      throw error;
+      print('Error updating status: $error');
+      // Handle error
     }
   }
 
@@ -55,7 +71,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
       case 4:
         return 'Completed';
       default:
-        return 'Unknown'; // Handle other status values if needed
+        return 'Unknown';
     }
   }
 
@@ -63,17 +79,19 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manage Orders for Seller'),
+        title: const Text('Manage Orders for Seller'),
       ),
-      body: FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        future: _getUserOrders(),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _userOrdersStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else if (!snapshot.hasData || snapshot.data!.size == 0) {
-            return Text('No data available');
+            return const Center(
+              child: Text('No data available', style: TextStyle(fontSize: 20)),
+            );
           } else {
             final userOrders = snapshot.data!.docs;
 
@@ -84,6 +102,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                   (userOrder) {
                     final userOrderData = userOrder.data();
                     final userOrderId = userOrderData['userOrderId'];
+                    final orderId = userOrderData['orderId'];
                     final imageUrl = userOrderData['imageUrl'];
                     final username = userOrderData['username'];
                     final phone = userOrderData['phone'];
@@ -96,13 +115,13 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
 
                     final statusColumn = status == 2
                         ? IconButton(
-                            icon: Icon(Icons.local_shipping),
+                            icon: const Icon(Icons.local_shipping),
                             onPressed: () {
                               showDialog(
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    title: Text('Select Courier'),
+                                    title: const Text('Select Courier'),
                                     content: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -111,7 +130,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                                           onCourierChanged:
                                               updateSelectedCourier,
                                         ),
-                                        SizedBox(height: 20),
+                                        const SizedBox(height: 20),
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceAround,
@@ -123,66 +142,49 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                                                 final userOrderIdToUpdate =
                                                     userOrderData[
                                                         'userOrderId'];
-                                                final orderId =
-                                                    userOrderData['orderId'];
                                                 final DateTime now =
                                                     DateTime.now();
 
-                                                final newStatus =
-                                                    3; // Status to update
+                                                const newStatus = 3;
 
-                                                try {
-                                                  // Update the status in Firestore
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection('orders')
-                                                      .doc(orderId)
-                                                      .collection('userOrders')
-                                                      .doc(userOrderIdToUpdate)
-                                                      .update({
-                                                    'status': newStatus,
-                                                    'trackingId': newTrackingId,
-                                                    'selectedCourier':
-                                                        _selectedCourier,
-                                                  });
+                                                // Update status in Firestore
+                                                _updateOrderStatus(
+                                                  orderId,
+                                                  userOrderIdToUpdate,
+                                                  newStatus,
+                                                  newTrackingId,
+                                                  _selectedCourier ?? '',
+                                                );
 
-                                                  // Add a new document to the deliveryMessage subcollection
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection('orders')
-                                                      .doc(orderId)
-                                                      .collection('userOrders')
-                                                      .doc(userOrderIdToUpdate)
-                                                      .collection(
-                                                          'deliveryMessage')
-                                                      .add({
-                                                    'message':
-                                                        'Seller is shipped out the parcel',
-                                                    'timestamp': now,
-                                                  });
+                                                // Add delivery message
+                                                await FirebaseFirestore.instance
+                                                    .collection('orders')
+                                                    .doc(orderId)
+                                                    .collection('userOrders')
+                                                    .doc(userOrderIdToUpdate)
+                                                    .collection(
+                                                        'deliveryMessage')
+                                                    .add({
+                                                  'message':
+                                                      'Seller is shipped out the parcel',
+                                                  'timestamp': now,
+                                                });
 
-                                                  // Show a snackbar and pop the dialog
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                          'Item is shipped.'),
-                                                    ),
-                                                  );
-                                                  Navigator.pop(
-                                                      context); // Close the dialog
-                                                } catch (error) {
-                                                  print(
-                                                      'Error updating status: $error');
-                                                  // Handle error
-                                                }
+                                                // Show snackbar and pop dialog
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                        'Item is shipped.'),
+                                                  ),
+                                                );
+                                                Navigator.pop(context);
                                               },
-                                              child: Text('Ship'),
+                                              child: const Text('Ship'),
                                             ),
                                             ElevatedButton(
                                               onPressed: () {
-                                                Navigator.pop(
-                                                    context); // Close the dialog
+                                                Navigator.pop(context);
                                               },
                                               child: Text('Cancel'),
                                               style: ElevatedButton.styleFrom(
@@ -198,11 +200,10 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                               );
                             },
                           )
-                        : IconButton(
+                        : const IconButton(
                             icon: Icon(Icons.local_shipping),
-                            onPressed:
-                                null, // Set onPressed to null when status is not 2
-                            color: Colors.grey, // Change the color of the icon
+                            onPressed: null,
+                            color: Colors.grey,
                           );
 
                     return ListTile(

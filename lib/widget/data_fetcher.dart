@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/userScreen/account_security.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce/models/user.dart';
 
@@ -8,7 +9,7 @@ class FirestoreDataFetcher extends StatefulWidget {
   const FirestoreDataFetcher({required this.userId, super.key});
 
   @override
-  _FirestoreDataFetcherState createState() => _FirestoreDataFetcherState();
+  State<FirestoreDataFetcher> createState() => _FirestoreDataFetcherState();
 }
 
 class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
@@ -43,7 +44,13 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        // Handle button tap
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                UserDetailsScreen(userId: widget.userId),
+                          ),
+                        );
                       },
                       child: Row(
                         children: [

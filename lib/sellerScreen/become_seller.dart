@@ -8,8 +8,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 class SellerRegistrationScreen extends StatefulWidget {
+  const SellerRegistrationScreen({super.key});
+
   @override
-  _SellerRegistrationScreenState createState() =>
+  State<SellerRegistrationScreen> createState() =>
       _SellerRegistrationScreenState();
 }
 
@@ -117,7 +119,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
       phoneNumberController.clear();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Successfully registered as a seller!'),
           duration: Duration(seconds: 2),
         ),
@@ -286,7 +288,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                 ElevatedButton(
                   onPressed: () => _submitRegistration(context, userId),
                   child: _isSubmitting
-                      ? CircularProgressIndicator() // Show CircularProgressIndicator when submitting
+                      ? const CircularProgressIndicator() // Show CircularProgressIndicator when submitting
                       : const Text('Submit Registration'),
                 ),
               ],

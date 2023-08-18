@@ -100,7 +100,7 @@ class _EditTypePageState extends State<EditTypePage> {
                       _updateTypeName(newTypeName);
                     },
               child: _isSaving
-                  ? CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
                   : const Text('Save'),
             ),
           ],

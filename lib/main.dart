@@ -7,7 +7,6 @@ import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ecommerce/screens/tabs.dart';
-import 'package:ecommerce/widget/order_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

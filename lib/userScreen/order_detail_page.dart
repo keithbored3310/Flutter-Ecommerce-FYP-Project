@@ -11,14 +11,14 @@ class OrderDetailsPage extends StatelessWidget {
   const OrderDetailsPage({
     required this.orderId,
     required this.userOrderId,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Details'),
+        title: const Text('Order Details'),
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
@@ -29,31 +29,31 @@ class OrderDetailsPage extends StatelessWidget {
             .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (!snapshot.hasData) {
-            return Center(child: Text('No data available.'));
+            return const Center(child: Text('No data available.'));
           } else {
             var orderData = snapshot.data!.data() as Map<String, dynamic>;
 
             return SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Delivery Address',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(orderData['username']),
                   Text(orderData['phone']),
                   Text(orderData['address']),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         orderData['shopName'],
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
@@ -66,7 +66,7 @@ class OrderDetailsPage extends StatelessWidget {
                             ),
                           );
                         },
-                        child: Text('Go to Shop'),
+                        child: const Text('Go to Shop'),
                       ),
                     ],
                   ),
@@ -102,13 +102,13 @@ class OrderDetailsPage extends StatelessWidget {
                           height: 60,
                           fit: BoxFit.cover,
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Product Name: ${orderData['productName']}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -123,29 +123,29 @@ class OrderDetailsPage extends StatelessWidget {
                     ),
                   ),
                   if (orderData['status'] == 3 || orderData['status'] == 4) ...[
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Text('Tracking ID: ${orderData['trackingId']}'),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         ElevatedButton(
                           onPressed: () {
                             Clipboard.setData(
                                 ClipboardData(text: orderData['trackingId']));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                   content:
                                       Text('Tracking ID copied to clipboard')),
                             );
                           },
-                          child: Text('Copy'),
+                          child: const Text('Copy'),
                         ),
                       ],
                     ),
                     Text('Selected Courier: ${orderData['selectedCourier']}'),
                   ],
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Delivery Messages',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
@@ -161,10 +161,10 @@ class OrderDetailsPage extends StatelessWidget {
                     builder: (context, deliveryMessageSnapshot) {
                       if (deliveryMessageSnapshot.connectionState ==
                           ConnectionState.waiting) {
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       } else if (!deliveryMessageSnapshot.hasData ||
                           deliveryMessageSnapshot.data!.docs.isEmpty) {
-                        return Text('No delivery messages available.');
+                        return const Text('No delivery messages available.');
                       } else {
                         var deliveryMessages =
                             deliveryMessageSnapshot.data!.docs;
@@ -183,20 +183,20 @@ class OrderDetailsPage extends StatelessWidget {
                                 children: [
                                   Text(
                                     '$message',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
                                     'Timestamp: ${timestamp.toString()}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  Divider(),
+                                  const Divider(),
                                 ],
                               );
                             },

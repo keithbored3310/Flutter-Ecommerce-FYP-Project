@@ -1,91 +1,128 @@
+import 'package:ecommerce/screens/product_details.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomepageScreen extends ConsumerStatefulWidget {
+class HomepageScreen extends StatefulWidget {
   const HomepageScreen({super.key});
 
   @override
-  ConsumerState<HomepageScreen> createState() {
-    return _HomepageScreenState();
-  }
+  State<HomepageScreen> createState() => _HomepageScreenState();
 }
 
-class _HomepageScreenState extends ConsumerState<HomepageScreen> {
-  String searchValue = '';
+class _HomepageScreenState extends State<HomepageScreen> {
+  Future<List<Map<String, dynamic>>> _fetchProducts() async {
+    final QuerySnapshot<Map<String, dynamic>> productsSnapshot =
+        await FirebaseFirestore.instance
+            .collection('products')
+            .limit(3) // Limit the number of fetched products to 3
+            .get();
+
+    List<Map<String, dynamic>> products = [];
+
+    productsSnapshot.docs.forEach((productDoc) {
+      Map<String, dynamic> productData = productDoc.data();
+      productData['productId'] =
+          productDoc.id; // Set the productId using document ID
+      products.add(productData);
+    });
+
+    return products;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      child: Column(
+    return Scaffold(
+      body: Column(
         children: [
-          GridItem(
-            image: 'assets/images/1.jpeg',
-            text: 'This is a huge promotions',
-          ),
-          SizedBox(height: 16.0),
-          GridItem(
-            image: 'assets/images/2.jpeg',
-            text: 'Brand New Item On Sale',
-          ),
-          SizedBox(height: 16.0),
-          GridItem(
-            image: 'assets/images/3.jpeg',
-            text: '60% Promotions',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class GridItem extends StatelessWidget {
-  final String image;
-  final String text;
-
-  const GridItem({
-    required this.image,
-    required this.text,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            height: 200.0, // Adjust the height as per your requirement
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(10.0),
-              ),
-              image: DecorationImage(
-                image: AssetImage(image),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Text(
-              text,
-              style: const TextStyle(
+              'Welcome to the Spare Parts Application',
+              style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchProducts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('Error fetching data'),
+                  );
+                } else if (!snapshot.hasData ||
+                    snapshot.data == null ||
+                    snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('No products available'),
+                  );
+                } else {
+                  List<Map<String, dynamic>> products = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      final imageUrl = products[index]['imageUrl'];
+                      final productName = products[index]['name'];
+
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductDetailsUserScreen(
+                                    productData: products[index],
+                                    maxQuantity: products[index]['quantity'],
+                                    productId: products[index]['productId'],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context)
+                                  .size
+                                  .width, // Adjust width as needed
+                              height: 200.0, // Adjust height as needed
+                              padding: const EdgeInsets.all(8.0), // Add padding
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey), // Add border
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Image.network(
+                                    imageUrl,
+                                    height:
+                                        150.0, // Adjust image height within the container
+                                    fit: BoxFit.contain,
+                                  ),
+                                  const SizedBox(height: 8.0), // Add spacing
+                                  Text(
+                                    productName,
+                                    style: const TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
             ),
           ),
         ],

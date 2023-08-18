@@ -44,10 +44,12 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     _form.currentState!.save();
+
+    setState(() {
+      _isAuthenticating = true;
+    });
+
     try {
-      setState(() {
-        _isAuthenticating = true;
-      });
       if (_isLogin) {
         // Log user in
         final userCredentials = await _firebase.signInWithEmailAndPassword(
@@ -86,9 +88,32 @@ class _AuthScreenState extends State<AuthScreen> {
         });
       }
     } on FirebaseAuthException catch (error) {
-      // Handle FirebaseAuthException
+      if (error.code == 'email-already-in-use') {
+        // Email is already registered
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Registration Failed'),
+              content: const Text('The email is already registered.'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Handle other FirebaseAuthException errors
+      }
     } finally {
-      _isAuthenticating = false;
+      setState(() {
+        _isAuthenticating = false;
+      });
     }
   }
 
@@ -130,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   right: 20,
                 ),
                 width: 200,
-                child: Image.asset('assets/images/chat.png'),
+                child: Image.asset('assets/images/appLogo.png'),
               ),
               Card(
                 margin: const EdgeInsets.all(20),

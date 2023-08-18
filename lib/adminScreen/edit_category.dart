@@ -104,7 +104,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                       _updateCategoryName(newCategoryName);
                     },
               child: _isSaving
-                  ? CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
                   : const Text('Save'),
             ),
           ],

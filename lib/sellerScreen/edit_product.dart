@@ -7,20 +7,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:ecommerce/widget/category_drop_down.dart';
 import 'package:ecommerce/widget/type_drop_down.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class EditProductScreen extends StatefulWidget {
   final String productId;
   final Map<String, dynamic> productData;
 
-  EditProductScreen({
+  const EditProductScreen({
     required this.productId,
     required this.productData,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _EditProductScreenState createState() => _EditProductScreenState();
+  State<EditProductScreen> createState() => _EditProductScreenState();
 }
 
 class _EditProductScreenState extends State<EditProductScreen> {
@@ -132,6 +131,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16.0),
                     BrandDropdown(
                       selectedBrand: _selectedBrand,
                       onBrandChanged: (value) {
@@ -140,6 +140,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 16.0),
                     CategoryDropdown(
                       selectedCategory: _selectedCategory,
                       onCategoryChanged: (value) {
@@ -148,6 +149,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 16.0),
                     TypeDropdown(
                       selectedType: _selectedType,
                       onTypeChanged: (value) {
@@ -228,6 +230,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       decoration:
                           const InputDecoration(labelText: 'Discounted Price'),
                     ),
+                    const SizedBox(height: 16.0),
                     // Save button
                     ElevatedButton(
                       onPressed: _saveProductChanges,

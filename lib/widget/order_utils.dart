@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> deleteOldPendingOrders() async {
   // Calculate the timestamp for 5 hours ago
-  final DateTime fiveHoursAgo = DateTime.now().subtract(Duration(hours: 5));
+  final DateTime fiveHoursAgo =
+      DateTime.now().subtract(const Duration(hours: 5));
 
   // Query for orders with status 1 and created_at timestamp before fiveHoursAgo
   QuerySnapshot ordersSnapshot = await FirebaseFirestore.instance

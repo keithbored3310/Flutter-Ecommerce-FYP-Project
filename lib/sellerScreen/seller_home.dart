@@ -1,4 +1,5 @@
 import 'package:ecommerce/adminScreen/courier_screen.dart';
+import 'package:ecommerce/chatsScreen/seller_chat_list.dart';
 import 'package:ecommerce/sellerScreen/manage_order.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class SellerHomeScreen extends StatefulWidget {
   const SellerHomeScreen({Key? key}) : super(key: key);
 
   @override
-  _SellerHomeScreenState createState() => _SellerHomeScreenState();
+  State<SellerHomeScreen> createState() => _SellerHomeScreenState();
 }
 
 class _SellerHomeScreenState extends State<SellerHomeScreen> {
@@ -58,154 +59,179 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
       appBar: AppBar(
         title: const Text('Seller Home'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                ButtonWidget(
-                  // Set the desired height directly in ButtonWidget
-                  icon: Icons.fire_truck,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Manage Order',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ManageOrderPage(sellerId: _sellerId),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ), // Add spacing between the buttons
-            Row(
-              children: [
-                ButtonWidget(
-                  // Set the desired height directly in ButtonWidget
-                  icon: Icons.fire_truck,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Manage Sellers Information',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            EditSellerScreen(sellerId: _sellerId),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ),
-            Row(
-              children: [
-                ButtonWidget(
-                  icon: Icons.store,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Manage Product',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ProductListScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ), // Add spacing between the buttons
-            Row(
-              children: [
-                ButtonWidget(
-                  icon: Icons.store,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Add Brand',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const BrandScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ), // Add spacing between the buttons
-            Row(
-              children: [
-                ButtonWidget(
-                  icon: Icons.store,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Add Category',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const CategoryScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ), // Add spacing between the buttons
-            Row(
-              children: [
-                ButtonWidget(
-                  icon: Icons.store,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Add Type',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const TypeScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
-            ),
-            Row(
-              children: [
-                ButtonWidget(
-                  icon: Icons.store,
-                  trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Add Courier',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const CourierScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  ButtonWidget(
+                    // Set the desired height directly in ButtonWidget
+                    icon: Icons.fire_truck,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Manage Order',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ManageOrderPage(sellerId: _sellerId),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ), // Add spacing between the buttons
+              Row(
+                children: [
+                  ButtonWidget(
+                    // Set the desired height directly in ButtonWidget
+                    icon: Icons.fire_truck,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Manage Sellers Information',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditSellerScreen(sellerId: _sellerId),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ), // Add spacing between the buttons
+              Row(
+                children: [
+                  ButtonWidget(
+                    // Set the desired height directly in ButtonWidget
+                    icon: Icons.fire_truck,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Manage Chats',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SellerChatListScreen(sellerId: _sellerId),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ),
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Manage Product',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProductListScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ), // Add spacing between the buttons
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Add Brand',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const BrandScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ), // Add spacing between the buttons
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Add Category',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CategoryScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ), // Add spacing between the buttons
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Add Type',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const TypeScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0, // Set the line width
+                color: Colors.black, // Set the line color
+              ),
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Add Courier',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CourierScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

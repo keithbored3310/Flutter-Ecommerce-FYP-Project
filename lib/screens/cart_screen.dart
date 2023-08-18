@@ -5,8 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
   @override
-  _CartScreenState createState() => _CartScreenState();
+  State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
@@ -76,8 +78,6 @@ class _CartScreenState extends State<CartScreen> {
         .collection('products')
         .doc(productId) // Use the productId to fetch the product document
         .get();
-
-    print('Product Snapshot Data: ${productSnapshot.data()}'); // Debugging log
 
     if (productSnapshot.exists) {
       int maxAvailableQuantity = productSnapshot['quantity'];
@@ -197,16 +197,17 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart'),
+        title: const Text('Cart'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: cartItemsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text('No items in the cart.'),
+            return const Center(
+              child:
+                  Text('No items in the cart.', style: TextStyle(fontSize: 20)),
             );
           } else {
             return Column(
@@ -252,7 +253,7 @@ class _CartScreenState extends State<CartScreen> {
                               height: 60,
                               fit: BoxFit.cover,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Text(item['name']),
                           ],
                         ),
@@ -263,9 +264,9 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 Text(
                                     'Discounted Price: RM${(itemDiscountedPrice * cartQuantity).toStringAsFixed(2)}'),
-                                Spacer(), // Add spacer for alignment
+                                const Spacer(), // Add spacer for alignment
                                 IconButton(
-                                  icon: Icon(Icons.remove_shopping_cart),
+                                  icon: const Icon(Icons.remove_shopping_cart),
                                   onPressed: () {
                                     FirebaseFirestore.instance
                                         .collection('carts')
@@ -275,10 +276,10 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
-                                Text('Quantity: '),
+                                const Text('Quantity: '),
                                 QuantityAdjustment(
                                   initialQuantity: cartQuantity,
                                   maxQuantity: maxQuantity,
@@ -318,20 +319,20 @@ class _CartScreenState extends State<CartScreen> {
                                 });
                               },
                             ),
-                            Text('Select All'),
+                            const Text('Select All'),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               'Total Price:',
                               style: TextStyle(fontSize: 14),
                             ),
                             Text(
                               'RM ${calculateTotalPrice(snapshot.data!.docs).toStringAsFixed(2)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -340,8 +341,8 @@ class _CartScreenState extends State<CartScreen> {
                           onPressed: selectedItems.isNotEmpty
                               ? () => proceedToCheckout(snapshot.data!)
                               : null,
-                          icon: Icon(Icons.shopping_cart),
-                          label: Text('Checkout'),
+                          icon: const Icon(Icons.shopping_cart),
+                          label: const Text('Checkout'),
                         ),
                       ],
                     ),
@@ -361,14 +362,15 @@ class QuantityAdjustment extends StatefulWidget {
   final int maxQuantity;
   final ValueChanged<int> onQuantityChanged;
 
-  QuantityAdjustment({
+  const QuantityAdjustment({
     required this.initialQuantity,
     required this.maxQuantity,
     required this.onQuantityChanged,
+    super.key,
   });
 
   @override
-  _QuantityAdjustmentState createState() => _QuantityAdjustmentState();
+  State<QuantityAdjustment> createState() => _QuantityAdjustmentState();
 }
 
 class _QuantityAdjustmentState extends State<QuantityAdjustment> {
@@ -385,7 +387,7 @@ class _QuantityAdjustmentState extends State<QuantityAdjustment> {
     return Row(
       children: [
         IconButton(
-          icon: Icon(Icons.remove),
+          icon: const Icon(Icons.remove),
           onPressed: () {
             setState(() {
               if (_currentQuantity > 1) {
@@ -420,7 +422,7 @@ class _QuantityAdjustmentState extends State<QuantityAdjustment> {
           ),
         ),
         IconButton(
-          icon: Icon(Icons.add),
+          icon: const Icon(Icons.add),
           onPressed: () {
             setState(() {
               if (_currentQuantity < widget.maxQuantity) {

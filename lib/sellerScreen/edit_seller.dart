@@ -10,14 +10,15 @@ class EditSellerScreen extends StatefulWidget {
   const EditSellerScreen({required this.sellerId, super.key});
 
   @override
-  _EditSellerScreenState createState() => _EditSellerScreenState();
+  State<EditSellerScreen> createState() => _EditSellerScreenState();
 }
 
 class _EditSellerScreenState extends State<EditSellerScreen> {
-  TextEditingController _shopNameController = TextEditingController();
-  TextEditingController _pickupAddressController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _shopNameController = TextEditingController();
+  final TextEditingController _pickupAddressController =
+      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
 
   File? _profileImage;
   final ImagePicker _imagePicker = ImagePicker();

@@ -96,7 +96,7 @@ class _EditBrandPageState extends State<EditBrandPage> {
                       _updateBrandName(newBrandName);
                     },
               child: _isSaving
-                  ? CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
                   : const Text('Save'),
             ),
           ],

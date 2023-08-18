@@ -5,8 +5,7 @@ import 'package:ecommerce/screens/product_details.dart';
 class FavoriteProductGridScreen extends StatelessWidget {
   final String userId;
 
-  const FavoriteProductGridScreen({required this.userId, Key? key})
-      : super(key: key);
+  const FavoriteProductGridScreen({required this.userId, super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -50,6 +50,7 @@ dependencies:
   pdf: ^3.10.4
   path_provider: ^2.1.0
   flutter_rating_bar: ^4.0.1
+  logger: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,7 @@ flutter:
     - assets/images/3.jpeg
     - assets/images/chat.png
     - assets/images/default-avatar.png
+    - assets/images/appLogo.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

@@ -12,7 +12,8 @@ class FilterDialog extends StatefulWidget {
       String? newCategory, String? newType) onApply;
   final VoidCallback onClear; // Add this line
 
-  FilterDialog({
+  const FilterDialog({
+    super.key,
     required this.initialFilterOptions,
     required this.selectedBrand,
     required this.selectedCategory,
@@ -22,7 +23,7 @@ class FilterDialog extends StatefulWidget {
   });
 
   @override
-  _FilterDialogState createState() => _FilterDialogState();
+  State<FilterDialog> createState() => _FilterDialogState();
 }
 
 class _FilterDialogState extends State<FilterDialog> {
@@ -78,7 +79,7 @@ class _FilterDialogState extends State<FilterDialog> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text('Price',
+                  const Text('Price',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   RadioListTile(
@@ -104,7 +105,7 @@ class _FilterDialogState extends State<FilterDialog> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text('Price Range',
+                  const Text('Price Range',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   Row(
@@ -113,7 +114,8 @@ class _FilterDialogState extends State<FilterDialog> {
                         child: TextFormField(
                           controller: minPriceController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(labelText: 'Min Price'),
+                          decoration:
+                              const InputDecoration(labelText: 'Min Price'),
                           onChanged: (value) {
                             setState(() {
                               filterOptions.minPrice =
@@ -127,7 +129,8 @@ class _FilterDialogState extends State<FilterDialog> {
                         child: TextFormField(
                           controller: maxPriceController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(labelText: 'Max Price'),
+                          decoration:
+                              const InputDecoration(labelText: 'Max Price'),
                           onChanged: (value) {
                             setState(() {
                               filterOptions.maxPrice =

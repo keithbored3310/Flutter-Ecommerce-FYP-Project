@@ -1,3 +1,4 @@
+import 'package:ecommerce/userScreen/delivery_page.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,11 +13,11 @@ class ReviewPage extends StatefulWidget {
   const ReviewPage({
     required this.orderId,
     required this.userOrderId,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _ReviewPageState createState() => _ReviewPageState();
+  State<ReviewPage> createState() => _ReviewPageState();
 }
 
 class _ReviewPageState extends State<ReviewPage> {
@@ -59,21 +60,22 @@ class _ReviewPageState extends State<ReviewPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Action'),
-          content: Text('Are you sure you want to give up giving reviews?'),
+          title: const Text('Confirm Action'),
+          content:
+              const Text('Are you sure you want to give up giving reviews?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close the dialog
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close the dialog
                 Navigator.pop(context); // Navigate back to the previous page
               },
-              child: Text('Give Up'),
+              child: const Text('Give Up'),
             ),
           ],
         );
@@ -124,8 +126,6 @@ class _ReviewPageState extends State<ReviewPage> {
           .doc(widget.orderId)
           .collection('userOrders')
           .doc(widget.userOrderId);
-      print('the userOrderId: ${widget.userOrderId}');
-
       // Check if the user order document exists
       final userOrderSnapshot = await userOrderDoc.get();
       if (userOrderSnapshot.exists) {
@@ -143,16 +143,16 @@ class _ReviewPageState extends State<ReviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Write a Review'),
+        title: const Text('Write a Review'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             showBackConfirmationDialog(context);
           },
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -164,10 +164,11 @@ class _ReviewPageState extends State<ReviewPage> {
                     width: 70, // Adjust the width as needed
                     height: 70, // Adjust the height as needed
                   ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   productName,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -175,11 +176,11 @@ class _ReviewPageState extends State<ReviewPage> {
               thickness: 2.0, // Set the line width
               color: Colors.black, // Set the line color
             ),
-            Text(
+            const Text(
               'Product Rating',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             RatingBar.builder(
               initialRating: 5, // Default rating value
               minRating: 1,
@@ -187,8 +188,8 @@ class _ReviewPageState extends State<ReviewPage> {
               allowHalfRating: true,
               itemCount: 5,
               itemSize: 30,
-              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => Icon(
+              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => const Icon(
                 Icons.star,
                 color: Colors.amber,
               ),
@@ -198,12 +199,12 @@ class _ReviewPageState extends State<ReviewPage> {
                 });
               },
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Seller Rating',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             RatingBar.builder(
               initialRating: 5, // Default rating value
               minRating: 1,
@@ -211,8 +212,8 @@ class _ReviewPageState extends State<ReviewPage> {
               allowHalfRating: true,
               itemCount: 5,
               itemSize: 30,
-              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => Icon(
+              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => const Icon(
                 Icons.star,
                 color: Colors.amber,
               ),
@@ -222,12 +223,12 @@ class _ReviewPageState extends State<ReviewPage> {
                 });
               },
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Upload Image',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Column(
               children: [
                 if (_pickedImage != null)
@@ -240,29 +241,29 @@ class _ReviewPageState extends State<ReviewPage> {
                   ),
                 ElevatedButton(
                   onPressed: () => _pickImage(ImageSource.camera),
-                  child: Text('Use Camera'),
+                  child: const Text('Use Camera'),
                 ),
                 ElevatedButton(
                   onPressed: () => _pickImage(ImageSource.gallery),
-                  child: Text('Pick from Gallery'),
+                  child: const Text('Pick from Gallery'),
                 ),
               ],
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Leave a Comment',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             TextField(
               controller: commentController,
               maxLines: 5,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Write your comment...',
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: isSubmitting
                   ? null // Disable the button if submitting
@@ -319,22 +320,19 @@ class _ReviewPageState extends State<ReviewPage> {
 
                       // Show a snackbar when the review is added successfully
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Review added successfully.'),
                         ),
                       );
-
+                      Navigator.pop(context);
                       // Set isSubmitting back to false
                       setState(() {
                         isSubmitting = false;
                       });
-
-                      // Navigate back to the previous page
-                      Navigator.pop(context);
                     },
               child: isSubmitting
-                  ? CircularProgressIndicator() // Show progress indicator while submitting
-                  : Text('Submit Review'),
+                  ? const CircularProgressIndicator() // Show progress indicator while submitting
+                  : const Text('Submit Review'),
             ),
           ],
         ),

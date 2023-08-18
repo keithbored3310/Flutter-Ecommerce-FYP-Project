@@ -10,14 +10,14 @@ class EditUserScreen extends StatefulWidget {
   const EditUserScreen({required this.userId, super.key});
 
   @override
-  _EditUserScreenState createState() => _EditUserScreenState();
+  State<EditUserScreen> createState() => _EditUserScreenState();
 }
 
 class _EditUserScreenState extends State<EditUserScreen> {
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _icController = TextEditingController();
-  TextEditingController _phoneController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _icController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   File? _profileImage;
   final ImagePicker _imagePicker = ImagePicker();

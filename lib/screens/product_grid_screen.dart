@@ -6,14 +6,14 @@ import 'package:ecommerce/widget/filter_dialog_category.dart';
 class ProductGridScreen extends StatefulWidget {
   final String category;
 
-  const ProductGridScreen({required this.category, Key? key}) : super(key: key);
+  const ProductGridScreen({required this.category, super.key});
 
   @override
-  _ProductGridScreenState createState() => _ProductGridScreenState();
+  State<ProductGridScreen> createState() => _ProductGridScreenState();
 }
 
 class _ProductGridScreenState extends State<ProductGridScreen> {
-  GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   String _searchText = '';
   FilterOptions _filterOptions = FilterOptions();
@@ -33,7 +33,7 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.search),
+          const Icon(Icons.search),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -43,7 +43,7 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
                   print('Search Text: $_searchText');
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search product...',
                 border: InputBorder.none,
               ),
@@ -77,7 +77,7 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
           title: const Text('Search Product'),
           content: TextField(
             controller: searchController,
-            decoration: InputDecoration(hintText: 'Enter product name'),
+            decoration: const InputDecoration(hintText: 'Enter product name'),
           ),
           actions: [
             TextButton(
@@ -118,6 +118,35 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
     );
   }
 
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>
+      getFilteredAndSortedProducts(
+          List<QueryDocumentSnapshot<Map<String, dynamic>>> products) {
+    // Apply sorting based on filter options
+    if (_filterOptions.sortAscending) {
+      products.sort((a, b) => a['name'].compareTo(b['name']));
+    } else if (_filterOptions.sortDescending) {
+      products.sort((a, b) => b['name'].compareTo(a['name']));
+    }
+
+    // Apply sorting based on filter options for price
+    if (_filterOptions.sortPriceAscending) {
+      products
+          .sort((a, b) => a['discountedPrice'].compareTo(b['discountedPrice']));
+    } else if (_filterOptions.sortPriceDescending) {
+      products
+          .sort((a, b) => b['discountedPrice'].compareTo(a['discountedPrice']));
+    }
+
+    // Filter based on price range
+    return products
+        .where((product) =>
+            (_filterOptions.minPrice == null ||
+                product['discountedPrice'] >= _filterOptions.minPrice!) &&
+            (_filterOptions.maxPrice == null ||
+                product['discountedPrice'] <= _filterOptions.maxPrice!))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,7 +154,7 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
         title: Text('Products in ${widget.category}'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               _showSearchDialog();
             },
@@ -189,32 +218,9 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
                       .contains(_searchText.toLowerCase()))
                   .toList();
 
-              // Apply sorting based on filter options
-              if (_filterOptions.sortAscending) {
-                products.sort((a, b) => a['name'].compareTo(b['name']));
-              } else if (_filterOptions.sortDescending) {
-                products.sort((a, b) => b['name'].compareTo(a['name']));
-              }
-
-              // Apply sorting based on filter options for price
-              if (_filterOptions.sortPriceAscending) {
-                products.sort((a, b) =>
-                    a['discountedPrice'].compareTo(b['discountedPrice']));
-              } else if (_filterOptions.sortPriceDescending) {
-                products.sort((a, b) =>
-                    b['discountedPrice'].compareTo(a['discountedPrice']));
-              }
-
-              // Filter based on price range
-              products = products
-                  .where((product) =>
-                      (_filterOptions.minPrice == null ||
-                          product['discountedPrice'] >=
-                              _filterOptions.minPrice!) &&
-                      (_filterOptions.maxPrice == null ||
-                          product['discountedPrice'] <=
-                              _filterOptions.maxPrice!))
-                  .toList();
+              // Use the new function to get the filtered and sorted products
+              final sortedAndFilteredProducts =
+                  getFilteredAndSortedProducts(filteredProducts);
 
               return GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -222,10 +228,10 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                 ),
-                itemCount: filteredProducts.length,
+                itemCount: sortedAndFilteredProducts.length,
                 itemBuilder: (context, index) {
-                  final productData = filteredProducts[index].data();
-                  final productId = filteredProducts[index].id;
+                  final productData = sortedAndFilteredProducts[index].data();
+                  final productId = sortedAndFilteredProducts[index].id;
                   final int maxQuantity = productData['quantity'] ?? 0;
                   final double price = productData['price'];
                   final double discount = productData['discount'] ?? 0.0;

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 
 class AddCourierPage extends StatefulWidget {
-  const AddCourierPage({Key? key}) : super(key: key);
+  const AddCourierPage({super.key});
 
   @override
-  _AddCourierPageState createState() => _AddCourierPageState();
+  State<AddCourierPage> createState() => _AddCourierPageState();
 }
 
 class _AddCourierPageState extends State<AddCourierPage> {

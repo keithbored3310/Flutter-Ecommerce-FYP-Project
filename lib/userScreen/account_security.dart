@@ -6,9 +6,9 @@ import 'package:ecommerce/userScreen/edit_user.dart';
 
 class UserDetailsScreen extends StatefulWidget {
   const UserDetailsScreen({
-    Key? key,
+    super.key,
     required this.userId,
-  }) : super(key: key);
+  });
 
   final String userId;
 

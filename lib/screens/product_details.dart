@@ -1,5 +1,6 @@
 import 'package:ecommerce/screens/cart_screen.dart';
 import 'package:ecommerce/screens/sellers_home_screen.dart';
+import 'package:ecommerce/userScreen/view_all_review.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,21 +15,37 @@ class ProductDetailsUserScreen extends StatefulWidget {
     required this.productData,
     required this.maxQuantity,
     required this.productId,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _ProductDetailsUserScreenState createState() =>
+  State<ProductDetailsUserScreen> createState() =>
       _ProductDetailsUserScreenState();
 }
 
 class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
   bool _isFavorite = false; // Track if the product is in favorites
+  int _cartItemCount = 0;
 
   @override
   void initState() {
     super.initState();
     _checkIfFavorite();
+    _updateCartItemCount();
+  }
+
+  Future<void> _updateCartItemCount() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final cartsSnapshot = await FirebaseFirestore.instance
+          .collection('carts')
+          .where('userId', isEqualTo: currentUser.uid)
+          .get();
+
+      setState(() {
+        _cartItemCount = cartsSnapshot.docs.length; // Update cart item count
+      });
+    }
   }
 
   Widget _buildDetailItem(String label, String value) {
@@ -68,6 +85,66 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
         ),
       ),
     );
+  }
+
+  Future<double> fetchAverageRating(String productId) async {
+    final reviewsSnapshot = await FirebaseFirestore.instance
+        .collection('reviews')
+        .where('productId', isEqualTo: productId)
+        .get();
+
+    if (reviewsSnapshot.docs.isEmpty) {
+      return 0.0; // No reviews yet
+    }
+
+    double totalRating = 0;
+    int validReviewCount = 0; // Count of valid reviews (non-null productRating)
+
+    for (var reviewDoc in reviewsSnapshot.docs) {
+      final reviewData = reviewDoc.data();
+      final productRating = reviewData['productRating'] as num?;
+      if (productRating != null) {
+        totalRating += productRating.toDouble();
+        validReviewCount++;
+      }
+    }
+
+    if (validReviewCount == 0) {
+      return 0.0; // No valid reviews with non-null productRating
+    }
+
+    double averageRating = totalRating / validReviewCount;
+    return averageRating;
+  }
+
+  Future<double> fetchSellerAverageRating(String sellerId) async {
+    final reviewsSnapshot = await FirebaseFirestore.instance
+        .collection('reviews')
+        .where('sellerId', isEqualTo: sellerId)
+        .get();
+
+    if (reviewsSnapshot.docs.isEmpty) {
+      return 0.0; // No reviews yet
+    }
+
+    double totalRating = 0;
+    int validReviewCount = 0; // Count of valid reviews (non-null sellerRating)
+
+    for (var reviewDoc in reviewsSnapshot.docs) {
+      final reviewData = reviewDoc.data();
+      final sellerRating = reviewData['sellerRating'] as num?;
+      if (sellerRating != null) {
+        totalRating += sellerRating.toDouble();
+        validReviewCount++;
+      }
+    }
+
+    if (validReviewCount == 0) {
+      return 0.0; // No valid reviews with non-null sellerRating
+    }
+
+    double averageRating = totalRating / validReviewCount;
+    return averageRating;
   }
 
   Future<void> _checkIfFavorite() async {
@@ -139,13 +216,28 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AddToCartDialog(
-          maxQuantity: maxQuantity,
-          productId: widget.productId,
-          userId: _getCurrentUserId()!,
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(16.0), // Adjust the radius as needed
+          ),
+          title: Text('Add to Cart'),
+          content: SingleChildScrollView(
+            // Wrap AddToCartDialog with SingleChildScrollView
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8, // Limit the width
+              child: AddToCartDialog(
+                maxQuantity: maxQuantity,
+                productId: widget.productId,
+                userId: _getCurrentUserId()!,
+              ),
+            ),
+          ),
         );
       },
-    );
+    ).then((_) {
+      _updateCartItemCount(); // Call _updateCartItemCount() after the dialog is dismissed
+    });
   }
 
   String? _getCurrentUserId() {
@@ -175,55 +267,91 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          future: FirebaseFirestore.instance
-              .collection('sellers')
-              .doc(sellerId)
-              .get(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
+        child: Column(
+          children: [
+            FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              future: FirebaseFirestore.instance
+                  .collection('sellers')
+                  .doc(sellerId)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
 
-            if (!snapshot.hasData || !snapshot.data!.exists) {
-              return Text('Seller Not Found');
-            }
+                if (!snapshot.hasData || !snapshot.data!.exists) {
+                  return const Text('Seller Not Found');
+                }
 
-            final sellerData = snapshot.data!.data()!;
-            final shopName = sellerData['shopName'];
-            final imageUrl =
-                sellerData['image_url'] ?? ''; // Fetch the imageUrl
-            ImageProvider<Object>? avatarImage;
+                final sellerData = snapshot.data!.data()!;
+                final shopName = sellerData['shopName'];
+                final imageUrl = sellerData['image_url'] ?? '';
+                ImageProvider<Object>? avatarImage;
 
-            if (imageUrl.isNotEmpty) {
-              avatarImage = NetworkImage(imageUrl);
-            } else {
-              final defaultAvatarImage =
-                  AssetImage('assets/images/default-avatar.png');
-              avatarImage = defaultAvatarImage;
-            }
+                if (imageUrl.isNotEmpty) {
+                  avatarImage = NetworkImage(imageUrl);
+                } else {
+                  const defaultAvatarImage =
+                      AssetImage('assets/images/default-avatar.png');
+                  avatarImage = defaultAvatarImage;
+                }
 
-            return Row(
-              // Wrap in a Row
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: avatarImage,
-                ),
-                const SizedBox(
-                    width:
-                        16), // Add some spacing between CircleAvatar and Text
-                Text(
-                  shopName,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            );
-          },
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: avatarImage,
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          shopName,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        FutureBuilder<double>(
+                          future: fetchSellerAverageRating(
+                              sellerId), // Use your function here
+                          builder: (context, ratingSnapshot) {
+                            if (ratingSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
+
+                            final sellerRating = ratingSnapshot.data ?? 0.0;
+                            return _buildRatingStars(sellerRating);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _fetchProductReviewsStream() {
+    return FirebaseFirestore.instance
+        .collection('reviews')
+        .where('productId', isEqualTo: widget.productId)
+        .limit(10)
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
+  void _viewAllReviews() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ViewAllReviewsPage(productId: widget.productId),
       ),
     );
   }
@@ -234,19 +362,47 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     final double discountedPrice =
         widget.productData['discountedPrice'] ?? -1.0;
     final bool hasDiscount = discountedPrice >= 0;
-    print('Product ID: ${widget.productId}');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product Details'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CartScreen()),
-              );
-            },
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
+              ),
+              if (_cartItemCount >
+                  0) // Show badge only if there are items in the cart
+                Positioned(
+                  top: 8, // Adjust the position as needed
+                  right: 8, // Adjust the position as needed
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 10,
+                      minHeight: 10,
+                    ),
+                    child: Text(
+                      _cartItemCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -330,7 +486,22 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                     'Product Rating',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  _buildRatingStars(widget.productData['rating']),
+                  FutureBuilder<double>(
+                    future: fetchAverageRating(widget.productId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final averageRating = snapshot.data ?? 0.0;
+                      return Row(
+                        // Wrap _buildRatingStars in a Row
+                        children: [
+                          _buildRatingStars(averageRating),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -347,6 +518,103 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                 ],
               ),
             ),
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: _fetchProductReviewsStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text('No reviews available.');
+                }
+
+                return NotificationListener(
+                  onNotification: (notification) {
+                    if (notification is OverscrollNotification &&
+                        notification.overscroll < 0) {
+                      // Scrolling up, allow the gesture to propagate
+                      return true;
+                    }
+                    return false;
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Product Reviews',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          TextButton(
+                            onPressed: _viewAllReviews,
+                            child: const Text('View All Reviews'),
+                          ),
+                        ],
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          final reviewData = snapshot.data!.docs[index].data();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(reviewData['imageUrl']),
+                                ),
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(reviewData['username']),
+                                  ],
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (reviewData['reviewImageUrl'] != null &&
+                                        reviewData['reviewImageUrl'].isNotEmpty)
+                                      Image.network(
+                                        reviewData['reviewImageUrl'],
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    if (reviewData['comment'] !=
+                                        null) // Check if comment is not null
+                                      Text(reviewData['comment']),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _buildRatingStars(
+                                            reviewData['productRating']),
+                                        Text(
+                                          reviewData['timestamp']
+                                              .toDate()
+                                              .toString(),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            )
           ],
         ),
       ),

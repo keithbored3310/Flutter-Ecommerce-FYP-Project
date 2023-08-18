@@ -1,14 +1,14 @@
+import 'package:ecommerce/screens/about_us.dart';
 import 'package:ecommerce/userScreen/account_security.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:ecommerce/widget/data_fetcher.dart';
 import 'package:ecommerce/widget/button_widget.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
-  const AccountSettingsScreen({Key? key}) : super(key: key);
+  const AccountSettingsScreen({super.key});
 
   @override
-  _AccountSettingsScreenState createState() => _AccountSettingsScreenState();
+  State<AccountSettingsScreen> createState() => _AccountSettingsScreenState();
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
@@ -70,32 +70,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   icon: Icons.emoji_people,
                   trailingIcon: Icons.arrow_forward_ios,
                   label: 'About Us',
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AboutUsScreen()),
+                    );
+                  },
                 ),
               ],
             ),
-            // Row(
-            //   children: [
-            //     ButtonWidget(
-            //       icon: Icons.emoji_people,
-            //       trailingIcon: Icons.arrow_forward_ios,
-            //       label: 'data Fetch',
-            //       onPressed: () {
-            //         if (_userId != null) {
-            //           Navigator.push(
-            //             context,
-            //             MaterialPageRoute(
-            //               builder: (context) =>
-            //                   FirestoreDataFetcher(userId: _userId!),
-            //             ),
-            //           );
-            //         } else {
-            //           // Handle case where userId is null (user not authenticated)
-            //         }
-            //       },
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       ),

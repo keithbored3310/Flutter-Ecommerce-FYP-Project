@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CourierScreen extends StatefulWidget {
-  const CourierScreen({Key? key}) : super(key: key);
+  const CourierScreen({super.key});
 
   @override
-  _CourierScreenState createState() => _CourierScreenState();
+  State<CourierScreen> createState() => _CourierScreenState();
 }
 
 class _CourierScreenState extends State<CourierScreen> {

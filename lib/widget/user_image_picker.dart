@@ -5,10 +5,10 @@ import 'package:image_picker/image_picker.dart';
 
 class UserImagePicker extends StatefulWidget {
   const UserImagePicker({
-    Key? key,
+    super.key,
     required this.onPickImage,
     this.initialImage,
-  }) : super(key: key);
+  });
 
   final void Function(File pickedImage) onPickImage;
   final ImageProvider<Object>? initialImage;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditCourierPage extends StatefulWidget {
-  const EditCourierPage({Key? key, required this.courierName});
+  const EditCourierPage({super.key, required this.courierName});
   final String courierName;
 
   @override
@@ -99,7 +99,7 @@ class _EditCourierPageState extends State<EditCourierPage> {
                       _updateCourierName(newCourierName);
                     },
               child: _isSaving
-                  ? CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
                   : const Text('Save'),
             ),
           ],

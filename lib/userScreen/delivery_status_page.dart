@@ -1,3 +1,4 @@
+import 'package:ecommerce/userScreen/delivery_page.dart';
 import 'package:ecommerce/userScreen/review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,14 +12,15 @@ class DeliveryStatusPage extends StatefulWidget {
   const DeliveryStatusPage({
     required this.title,
     required this.userUid,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _DeliveryStatusPageState createState() => _DeliveryStatusPageState();
+  State<DeliveryStatusPage> createState() => _DeliveryStatusPageState();
 }
 
-class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
+class _DeliveryStatusPageState extends State<DeliveryStatusPage>
+    with AutomaticKeepAliveClientMixin<DeliveryStatusPage> {
   late List<Map<String, dynamic>> userOrdersData;
 
   @override
@@ -61,8 +63,6 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
     List<DocumentSnapshot> ordersAndUserOrders = [];
 
     if (status == 1) {
-      print('enter status 1');
-
       // Fetch the document IDs of orders that match the criteria
       QuerySnapshot orderIdsQuerySnapshot = await FirebaseFirestore.instance
           .collection('orders')
@@ -84,10 +84,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
 
         ordersAndUserOrders.addAll(userOrdersQuerySnapshot.docs);
       }
-
-      print('ordersAndUserOrders: $ordersAndUserOrders');
     } else {
-      print('enter status = $status');
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collectionGroup('userOrders')
           .where('userId', isEqualTo: widget.userUid)
@@ -101,17 +98,24 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return FutureBuilder<List<DocumentSnapshot>>(
       future: fetchOrdersAndUserOrders(getStatusFromTitle(widget.title)),
       builder: (context, ordersAndUserOrdersSnapshot) {
         if (ordersAndUserOrdersSnapshot.connectionState ==
             ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const Center(
+            child: CircularProgressIndicator(), // Wrap in Center
+          );
         } else if (!ordersAndUserOrdersSnapshot.hasData ||
             ordersAndUserOrdersSnapshot.data!.isEmpty) {
-          return Center(
-            child: Text('No orders available.'),
+          return const Center(
+            child: Text('No orders available.', style: TextStyle(fontSize: 20)),
           );
         } else {
           List<DocumentSnapshot> ordersAndUserOrders =
@@ -121,8 +125,8 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
                   child: Text(
                     'User Orders:',
                     style: TextStyle(fontSize: 20),
@@ -156,7 +160,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                 ),
                               );
                             },
-                            child: Text('Pay Now'),
+                            child: const Text('Pay Now'),
                           ),
                         );
                       } else {
@@ -181,7 +185,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                   children: [
                                     Text(
                                       data['shopName'],
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -221,12 +225,15 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                         if (deliveryMessageSnapshot
                                                 .connectionState ==
                                             ConnectionState.waiting) {
-                                          return CircularProgressIndicator();
+                                          return const Center(
+                                            child:
+                                                CircularProgressIndicator(), // Wrap in Center
+                                          );
                                         } else if (!deliveryMessageSnapshot
                                                 .hasData ||
                                             deliveryMessageSnapshot
                                                 .data!.docs.isEmpty) {
-                                          return SizedBox();
+                                          return const SizedBox();
                                         } else {
                                           var deliveryMessage =
                                               deliveryMessageSnapshot
@@ -236,7 +243,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                                 vertical: 8),
                                             child: Text(
                                               '$deliveryMessage',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 16,
                                                 fontStyle: FontStyle.italic,
                                               ),
@@ -280,11 +287,16 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                       'orderReceived': true,
                                     });
 
-                                    setState(() {
-                                      // Update any relevant variables or states here
-                                    });
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const DeliveryPage(
+                                                initialTabIndex: 3),
+                                      ),
+                                    );
                                   },
-                                  child: Text('Order Received'),
+                                  child: const Text('Order Received'),
                                 ),
                               if (orderStatus == 4 &&
                                   !(data['isRated'] ?? false))
@@ -300,7 +312,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage> {
                                       ),
                                     );
                                   },
-                                  child: Text('Rate'),
+                                  child: const Text('Rate'),
                                 ),
                             ],
                           ),

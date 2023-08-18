@@ -7,10 +7,10 @@ import 'package:ecommerce/widget/filter_dialog.dart';
 class ProductPanelScreen extends StatefulWidget {
   final String query;
 
-  ProductPanelScreen({required this.query, Key? key}) : super(key: key);
+  const ProductPanelScreen({required this.query, super.key});
 
   @override
-  _ProductPanelScreenState createState() => _ProductPanelScreenState();
+  State<ProductPanelScreen> createState() => _ProductPanelScreenState();
 }
 
 class _ProductPanelScreenState extends State<ProductPanelScreen> {
@@ -18,6 +18,36 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
   String? _selectedBrand;
   String? _selectedCategory;
   String? _selectedType;
+
+  // Insert the getFilteredAndSortedProducts function here
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>
+      getFilteredAndSortedProducts(
+          List<QueryDocumentSnapshot<Map<String, dynamic>>> products) {
+    // Apply sorting based on filter options
+    if (_filterOptions.sortAscending) {
+      products.sort((a, b) => a['name'].compareTo(b['name']));
+    } else if (_filterOptions.sortDescending) {
+      products.sort((a, b) => b['name'].compareTo(a['name']));
+    }
+
+    // Apply sorting based on filter options for price
+    if (_filterOptions.sortPriceAscending) {
+      products
+          .sort((a, b) => a['discountedPrice'].compareTo(b['discountedPrice']));
+    } else if (_filterOptions.sortPriceDescending) {
+      products
+          .sort((a, b) => b['discountedPrice'].compareTo(a['discountedPrice']));
+    }
+
+    // Filter based on price range
+    return products
+        .where((product) =>
+            (_filterOptions.minPrice == null ||
+                product['discountedPrice'] >= _filterOptions.minPrice!) &&
+            (_filterOptions.maxPrice == null ||
+                product['discountedPrice'] <= _filterOptions.maxPrice!))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +74,7 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.search),
+                const Icon(Icons.search),
                 const SizedBox(width: 8),
                 Text(widget.query),
               ],
@@ -103,6 +133,7 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
           } else {
             List<QueryDocumentSnapshot<Map<String, dynamic>>> products =
                 snapshot.data!.docs;
+
             final filteredProducts = products
                 .where((product) => product['name']
                     .toString()
@@ -110,31 +141,9 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
                     .contains(widget.query.toLowerCase()))
                 .toList();
 
-            // Apply sorting based on filter options
-            if (_filterOptions.sortAscending) {
-              products.sort((a, b) => a['name'].compareTo(b['name']));
-            } else if (_filterOptions.sortDescending) {
-              products.sort((a, b) => b['name'].compareTo(a['name']));
-            }
-
-            // Apply sorting based on filter options for price
-            if (_filterOptions.sortPriceAscending) {
-              products.sort((a, b) =>
-                  a['discountedPrice'].compareTo(b['discountedPrice']));
-            } else if (_filterOptions.sortPriceDescending) {
-              products.sort((a, b) =>
-                  b['discountedPrice'].compareTo(a['discountedPrice']));
-            }
-
-            // Filter based on price range
-            products = products
-                .where((product) =>
-                    (_filterOptions.minPrice == null ||
-                        product['discountedPrice'] >=
-                            _filterOptions.minPrice!) &&
-                    (_filterOptions.maxPrice == null ||
-                        product['discountedPrice'] <= _filterOptions.maxPrice!))
-                .toList();
+            // Use the new function to get the filtered and sorted products
+            final sortedAndFilteredProducts =
+                getFilteredAndSortedProducts(filteredProducts);
 
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -142,10 +151,10 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
-              itemCount: filteredProducts.length,
+              itemCount: sortedAndFilteredProducts.length,
               itemBuilder: (context, index) {
-                final productData = filteredProducts[index].data();
-                final productId = filteredProducts[index].id;
+                final productData = sortedAndFilteredProducts[index].data();
+                final productId = sortedAndFilteredProducts[index].id;
                 final int maxQuantity = productData['quantity'] ?? 0;
                 final double price = productData['price'];
                 final double discount = productData['discount'] ?? 0.0;

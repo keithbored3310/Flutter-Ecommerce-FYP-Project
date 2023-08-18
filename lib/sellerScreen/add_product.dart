@@ -414,7 +414,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         }
                       },
                 child: _isSaving
-                    ? CircularProgressIndicator()
+                    ? const CircularProgressIndicator()
                     : const Text('Save'),
               ),
             ],

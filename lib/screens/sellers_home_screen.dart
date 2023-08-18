@@ -1,55 +1,112 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/chatsScreen/chat_screen.dart';
 import 'package:ecommerce/screens/product_details.dart';
 import 'package:ecommerce/screens/seller_information.dart';
-import 'package:ecommerce/sellerScreen/manage_product.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SellerHomePage extends StatefulWidget {
   final String sellerId;
 
-  const SellerHomePage({required this.sellerId});
+  const SellerHomePage({super.key, required this.sellerId});
 
   @override
-  _SellerHomePageState createState() => _SellerHomePageState();
+  State<SellerHomePage> createState() => _SellerHomePageState();
 }
 
 class _SellerHomePageState extends State<SellerHomePage> {
-  GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
   String _searchText = '';
+  late Map<String, dynamic> _sellerInfo;
+  late Map<String, dynamic> _userInfo;
 
-  Widget _searchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      height: kToolbarHeight - 8,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.grey,
+  @override
+  void initState() {
+    super.initState();
+    _fetchSellerInfo(widget.sellerId);
+    _fetchUserInfo();
+  }
+
+  Future<void> _fetchSellerInfo(String sellerId) async {
+    final sellerSnapshot = await FirebaseFirestore.instance
+        .collection('sellers')
+        .doc(sellerId)
+        .get();
+
+    if (sellerSnapshot.exists) {
+      setState(() {
+        _sellerInfo = sellerSnapshot.data()!;
+      });
+    }
+  }
+
+  Future<void> _fetchUserInfo() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userSnapshot.exists) {
+        setState(() {
+          _userInfo = userSnapshot.data()!;
+        });
+      }
+    }
+  }
+
+  Widget _buildRatingStars(dynamic rating) {
+    if (rating == null || rating is! num) {
+      return const Text('N/A');
+    }
+
+    double ratingValue = rating.toDouble();
+    if (ratingValue < 0 || ratingValue > 5) {
+      return const Text('N/A');
+    }
+
+    int starCount = ratingValue.round();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        starCount,
+        (index) => const Icon(
+          Icons.star,
+          color: Colors.yellow,
         ),
       ),
-      child: Row(
-        children: [
-          Icon(Icons.search),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value;
-                  print('Search Text: $_searchText');
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search product...',
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
+  }
+
+  Future<double> fetchSellerAverageRating(String sellerId) async {
+    final reviewsSnapshot = await FirebaseFirestore.instance
+        .collection('reviews')
+        .where('sellerId', isEqualTo: sellerId)
+        .get();
+
+    if (reviewsSnapshot.docs.isEmpty) {
+      return 0.0; // No reviews yet
+    }
+
+    double totalRating = 0;
+    int validReviewCount = 0; // Count of valid reviews (non-null sellerRating)
+
+    for (var reviewDoc in reviewsSnapshot.docs) {
+      final reviewData = reviewDoc.data();
+      final sellerRating = reviewData['sellerRating'] as num?;
+      if (sellerRating != null) {
+        totalRating += sellerRating.toDouble();
+        validReviewCount++;
+      }
+    }
+
+    if (validReviewCount == 0) {
+      return 0.0; // No valid reviews with non-null sellerRating
+    }
+
+    double averageRating = totalRating / validReviewCount;
+    return averageRating;
   }
 
   Future<void> _showSearchDialog() async {
@@ -63,7 +120,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
           title: const Text('Search Product'),
           content: TextField(
             controller: searchController,
-            decoration: InputDecoration(hintText: 'Enter product name'),
+            decoration: const InputDecoration(hintText: 'Enter product name'),
           ),
           actions: [
             TextButton(
@@ -101,10 +158,10 @@ class _SellerHomePageState extends State<SellerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seller Homepage'),
+        title: const Text('Seller Homepage'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               _showSearchDialog();
             },
@@ -122,11 +179,11 @@ class _SellerHomePageState extends State<SellerHomePage> {
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
 
                 if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return Text('Seller Not Found');
+                  return const Text('Seller Not Found');
                 }
 
                 final sellerData = snapshot.data!.data()!;
@@ -138,11 +195,11 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 if (imageUrl.isNotEmpty) {
                   avatarImage = NetworkImage(imageUrl);
                 } else {
-                  final defaultAvatarImage =
+                  const defaultAvatarImage =
                       AssetImage('assets/images/default-avatar.png');
                   avatarImage = defaultAvatarImage;
                 }
-
+                final sellerRating = fetchSellerAverageRating(widget.sellerId);
                 return Row(
                   mainAxisAlignment: MainAxisAlignment
                       .center, // Align items horizontally at the center
@@ -152,7 +209,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
                       backgroundImage:
                           avatarImage, // Display the fetched imageUrl
                     ),
-                    SizedBox(
+                    const SizedBox(
                         width:
                             16.0), // Add some spacing between CircleAvatar and Text
                     Column(
@@ -171,26 +228,102 @@ class _SellerHomePageState extends State<SellerHomePage> {
                           },
                           child: Text(
                             shopName,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
+                        FutureBuilder<double>(
+                          future: sellerRating,
+                          builder: (context, ratingSnapshot) {
+                            if (ratingSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
+
+                            final sellerRatingValue =
+                                ratingSnapshot.data ?? 0.0;
+
+                            return Row(
+                              children: [
+                                _buildRatingStars(sellerRatingValue),
+                              ],
+                            );
+                          },
+                        ),
                         Row(
                           children: [
                             ElevatedButton.icon(
-                              onPressed: () {
-                                // Add your chat logic here
+                              onPressed: () async {
+                                if (_sellerInfo.isEmpty || _userInfo.isEmpty) {
+                                  return; // Don't proceed if information is not available
+                                }
+
+                                final currentUserUid =
+                                    FirebaseAuth.instance.currentUser?.uid;
+                                final sellerId = widget.sellerId;
+
+                                if (currentUserUid != null) {
+                                  final chatId =
+                                      currentUserUid.compareTo(sellerId) < 0
+                                          ? '$currentUserUid-$sellerId'
+                                          : '$sellerId-$currentUserUid';
+
+                                  final sender = currentUserUid;
+                                  final receiver = sellerId;
+
+                                  // Check if the chat exists
+                                  final chatSnapshot = await FirebaseFirestore
+                                      .instance
+                                      .collection('chats')
+                                      .doc(chatId)
+                                      .get();
+
+                                  if (chatSnapshot.exists) {
+                                    // Chat exists, navigate to the chat screen
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ChatScreen(chatId: chatId),
+                                      ),
+                                    );
+                                  } else {
+                                    // Chat doesn't exist, initiate the chat
+                                    await FirebaseFirestore.instance
+                                        .collection('chats')
+                                        .doc(chatId)
+                                        .set({
+                                      'sender': sender,
+                                      'receiver': receiver,
+                                      'lastMessage': '',
+                                      'timestamp': FieldValue.serverTimestamp(),
+                                      'sellerShopName': _sellerInfo['shopName'],
+                                      'sellerImageUrl':
+                                          _sellerInfo['image_url'],
+                                      'userUsername': _userInfo['username'],
+                                      'userImageUrl': _userInfo['image_url'],
+                                    });
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ChatScreen(chatId: chatId),
+                                      ),
+                                    );
+                                  }
+                                }
                               },
-                              icon: Icon(Icons.chat),
-                              label: Text('Chat'),
+                              icon: const Icon(Icons.chat),
+                              label: const Text('Chat'),
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30.0),
                                 ),
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ],
@@ -199,7 +332,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 );
               },
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
@@ -208,11 +341,11 @@ class _SellerHomePageState extends State<SellerHomePage> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Text('No Products Available');
+                    return const Text('No Products Available');
                   }
 
                   final products = snapshot.data!.docs;

@@ -12,7 +12,7 @@ class BrandDropdown extends StatefulWidget {
   final ValueChanged<String?> onBrandChanged;
 
   @override
-  _BrandDropdownState createState() => _BrandDropdownState();
+  State<BrandDropdown> createState() => _BrandDropdownState();
 }
 
 class _BrandDropdownState extends State<BrandDropdown> {

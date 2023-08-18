@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 class SellerInformationPage extends StatelessWidget {
   final String sellerId;
 
-  const SellerInformationPage({required this.sellerId});
+  const SellerInformationPage({super.key, required this.sellerId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seller Information'),
+        title: const Text('Seller Information'),
       ),
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future: FirebaseFirestore.instance
@@ -19,11 +19,11 @@ class SellerInformationPage extends StatelessWidget {
             .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Text('Seller Not Found');
+            return const Text('Seller Not Found');
           }
 
           final sellerData = snapshot.data!.data()!;
@@ -41,7 +41,7 @@ class SellerInformationPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Company Name',
                       style: TextStyle(
                         fontSize: 18,
@@ -50,13 +50,13 @@ class SellerInformationPage extends StatelessWidget {
                     ),
                     Text(
                       '$companyName',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 const Divider(
                   thickness: 1,
                   indent: 16,
@@ -66,9 +66,9 @@ class SellerInformationPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Email',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -79,7 +79,7 @@ class SellerInformationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 const Divider(
                   thickness: 1,
                   indent: 16,
@@ -89,9 +89,9 @@ class SellerInformationPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Phone Number',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -102,7 +102,7 @@ class SellerInformationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 const Divider(
                   thickness: 1,
                   indent: 16,
@@ -112,9 +112,9 @@ class SellerInformationPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Pickup Address',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -125,7 +125,7 @@ class SellerInformationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 const Divider(
                   thickness: 1,
                   indent: 16,
@@ -135,9 +135,9 @@ class SellerInformationPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Registration Number',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -148,7 +148,7 @@ class SellerInformationPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 const Divider(
                   thickness: 1,
                   indent: 16,

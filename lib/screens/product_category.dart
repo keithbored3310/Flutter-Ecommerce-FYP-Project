@@ -17,7 +17,7 @@ Future<List<String>> fetchCategories() async {
 }
 
 class ProductCategoryScreen extends StatelessWidget {
-  const ProductCategoryScreen({Key? key}) : super(key: key);
+  const ProductCategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

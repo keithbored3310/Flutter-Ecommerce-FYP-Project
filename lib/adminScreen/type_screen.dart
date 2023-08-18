@@ -43,7 +43,6 @@ class _TypeScreenState extends State<TypeScreen> {
   }
 
   void _deleteType(String typeId) {
-    print(typeId);
     if (typeId.isNotEmpty) {
       print('Deleting type with ID: $typeId');
       FirebaseFirestore.instance

@@ -3,10 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DeliveryPage extends StatefulWidget {
-  const DeliveryPage({Key? key}) : super(key: key);
+  final int initialTabIndex; // Add this parameter
+
+  const DeliveryPage({super.key, required this.initialTabIndex});
 
   @override
-  _DeliveryPageState createState() => _DeliveryPageState();
+  State<DeliveryPage> createState() => _DeliveryPageState();
 }
 
 class _DeliveryPageState extends State<DeliveryPage>
@@ -17,8 +19,9 @@ class _DeliveryPageState extends State<DeliveryPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    fetchUserUid(); // Call the function to fetch userUid
+    _tabController = TabController(
+        length: 4, vsync: this, initialIndex: widget.initialTabIndex);
+    fetchUserUid();
   }
 
   Future<void> fetchUserUid() async {

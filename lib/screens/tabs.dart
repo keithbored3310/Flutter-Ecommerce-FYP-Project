@@ -1,4 +1,8 @@
-import 'package:ecommerce/screens/search_screen.dart';
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/chatsScreen/user_chat_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ecommerce/screens/account_details.dart';
@@ -6,7 +10,7 @@ import 'package:ecommerce/screens/homepage.dart';
 import 'package:ecommerce/screens/cart_screen.dart';
 
 class TabsScreen extends StatefulWidget {
-  const TabsScreen({Key? key}) : super(key: key);
+  const TabsScreen({super.key});
 
   @override
   State<TabsScreen> createState() {
@@ -16,6 +20,37 @@ class TabsScreen extends StatefulWidget {
 
 class _TabsScreenState extends State<TabsScreen> {
   int _selectedPageIndex = 0;
+  int _cartItemCount = 0;
+
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+      _cartItemsSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToCartItems(); // Start listening to cart item changes
+  }
+
+  void _listenToCartItems() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      _cartItemsSubscription = FirebaseFirestore.instance
+          .collection('carts')
+          .where('userId', isEqualTo: currentUser.uid)
+          .snapshots()
+          .listen((snapshot) {
+        setState(() {
+          _cartItemCount = snapshot.docs.length; // Update cart item count
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _cartItemsSubscription?.cancel(); // Cancel the stream subscription
+    super.dispose();
+  }
 
   void _selectPage(int index) {
     setState(() {
@@ -55,22 +90,100 @@ class _TabsScreenState extends State<TabsScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.shopping_cart),
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.shopping_cart),
+                        if (_cartItemCount > 0)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 10,
+                                minHeight: 10,
+                              ),
+                              child: Text(
+                                _cartItemCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CartScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const CartScreen()),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.message), // Add the chat icon
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserChatListScreen()),
                       );
                     },
                   ),
                 ]
               : [
                   IconButton(
-                    icon: const Icon(Icons.shopping_cart),
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.shopping_cart),
+                        if (_cartItemCount > 0)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 10,
+                                minHeight: 10,
+                              ),
+                              child: Text(
+                                _cartItemCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CartScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const CartScreen()),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.message), // Add the chat icon
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserChatListScreen()),
                       );
                     },
                   ),

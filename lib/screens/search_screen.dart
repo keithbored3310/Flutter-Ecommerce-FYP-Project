@@ -8,11 +8,11 @@ class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, this.initialQuery});
 
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<String> searchRecords = [];
 
   Future<void> _refreshData() async {
@@ -88,9 +88,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _searchController.text = widget.initialQuery ?? '';
-    });
+    _searchController.text = widget.initialQuery ?? '';
 
     _loadSearchRecords();
   }
