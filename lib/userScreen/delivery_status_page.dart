@@ -1,8 +1,9 @@
 import 'package:ecommerce/userScreen/delivery_page.dart';
+import 'package:ecommerce/userScreen/payment_gateway.dart';
 import 'package:ecommerce/userScreen/review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ecommerce/screens/order_confirmation.dart';
+import 'package:ecommerce/screens/order_confirmation_x.dart';
 import 'package:ecommerce/userScreen/order_detail_page.dart';
 
 class DeliveryStatusPage extends StatefulWidget {
@@ -153,7 +154,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => OrderConfirmationScreen(
+                                  builder: (context) => PaymentGatewayScreen(
                                     orderId: orderId,
                                     userUid: widget.userUid,
                                   ),
@@ -203,6 +204,9 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Text(
+                                      'Product Name: ${data['productName']}',
+                                    ),
                                     Text(
                                       'Quantity: ${data['quantity']}',
                                     ),

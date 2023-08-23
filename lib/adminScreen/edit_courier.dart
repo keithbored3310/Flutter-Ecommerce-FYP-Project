@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditCourierPage extends StatefulWidget {
-  const EditCourierPage({super.key, required this.courierName});
+  const EditCourierPage({Key? key, required this.courierName})
+      : super(key: key);
   final String courierName;
 
   @override
@@ -25,48 +26,75 @@ class _EditCourierPageState extends State<EditCourierPage> {
     super.dispose();
   }
 
-  void _updateCourierName(String newCourierName) {
+  Future<void> _updateCourierName(String newCourierName) async {
     setState(() {
       _isSaving = true;
     });
 
-    FirebaseFirestore.instance
-        .collection('couriers')
-        .where('courier', isEqualTo: widget.courierName)
-        .get()
-        .then((querySnapshot) {
-      if (querySnapshot.docs.isNotEmpty) {
-        String documentID = querySnapshot.docs.first.id;
-        FirebaseFirestore.instance
+    try {
+      // Update the Courier name in Firestore using the document ID
+      final courierQuerySnapshot = await FirebaseFirestore.instance
+          .collection('couriers')
+          .where('courier', isEqualTo: widget.courierName)
+          .get();
+
+      if (courierQuerySnapshot.docs.isNotEmpty) {
+        final courierDocumentID = courierQuerySnapshot.docs.first.id;
+
+        await FirebaseFirestore.instance
             .collection('couriers')
-            .doc(documentID)
+            .doc(courierDocumentID)
             .update({
           'courier': newCourierName,
-        }).then((_) async {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Courier updated successfully'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          await Future.delayed(const Duration(seconds: 2));
-          Navigator.pop(context, newCourierName);
-        }).catchError((error) {
-          print('Error updating courier name: $error');
         });
+
+        // Update the userOrders subcollections where 'selectedCourier' matches the old courier name
+        await FirebaseFirestore.instance
+            .collectionGroup(
+                'userOrders') // Use collectionGroup to query across all 'userOrders' subcollections
+            .where('selectedCourier', isEqualTo: widget.courierName)
+            .get()
+            .then((querySnapshot) async {
+          if (querySnapshot.docs.isNotEmpty) {
+            for (final userOrderDoc in querySnapshot.docs) {
+              final userOrderId = userOrderDoc.id;
+              await userOrderDoc.reference.update({
+                'selectedCourier': newCourierName,
+              });
+            }
+          }
+        });
+
+        // Courier name updated successfully
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Courier updated successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.pop(context, newCourierName);
       } else {
+        // Courier with the original name not found in Firestore
         print('Courier not found in Firestore');
       }
+    } catch (error) {
+      // Handle any errors that occur during the update process
+      print('Error updating Courier name: $error');
 
+      // Show an error message or handle the error appropriately
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error updating Courier name.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
       setState(() {
         _isSaving = false;
       });
-    }).catchError((error) {
-      print('Error querying Firestore: $error');
-      setState(() {
-        _isSaving = false;
-      });
-    });
+    }
   }
 
   @override
@@ -95,11 +123,11 @@ class _EditCourierPageState extends State<EditCourierPage> {
               onPressed: _isSaving
                   ? null
                   : () async {
-                      String newCourierName = _newCourierController.text;
-                      _updateCourierName(newCourierName);
+                      final newCourierName = _newCourierController.text;
+                      await _updateCourierName(newCourierName);
                     },
               child: _isSaving
-                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator()
                   : const Text('Save'),
             ),
           ],

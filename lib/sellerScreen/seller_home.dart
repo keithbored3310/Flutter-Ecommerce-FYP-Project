@@ -1,6 +1,8 @@
 import 'package:ecommerce/adminScreen/courier_screen.dart';
 import 'package:ecommerce/chatsScreen/seller_chat_list.dart';
 import 'package:ecommerce/sellerScreen/manage_order.dart';
+import 'package:ecommerce/sellerScreen/manage_sales.dart';
+import 'package:ecommerce/sellerScreen/seller_pdf_x.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -69,7 +71,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 children: [
                   ButtonWidget(
                     // Set the desired height directly in ButtonWidget
-                    icon: Icons.fire_truck,
+                    icon: Icons.shopping_bag,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Order',
                     onPressed: () {
@@ -92,7 +94,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 children: [
                   ButtonWidget(
                     // Set the desired height directly in ButtonWidget
-                    icon: Icons.fire_truck,
+                    icon: Icons.people,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Sellers Information',
                     onPressed: () {
@@ -115,7 +117,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 children: [
                   ButtonWidget(
                     // Set the desired height directly in ButtonWidget
-                    icon: Icons.fire_truck,
+                    icon: Icons.chat,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Chats',
                     onPressed: () {
@@ -124,6 +126,28 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                         MaterialPageRoute(
                           builder: (context) =>
                               SellerChatListScreen(sellerId: _sellerId),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0,
+                color: Colors.black,
+              ),
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.bar_chart,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'Manage Sales',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ManageSalesScreen(sellerId: _sellerId),
                         ),
                       );
                     },
@@ -217,7 +241,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               Row(
                 children: [
                   ButtonWidget(
-                    icon: Icons.store,
+                    icon: Icons.fire_truck,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Add Courier',
                     onPressed: () {

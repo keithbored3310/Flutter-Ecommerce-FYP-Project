@@ -39,7 +39,6 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
           }
 
           final chatDocs = snapshot.data?.docs ?? [];
-          print('how many chatDocs: ${chatDocs.length}');
           if (chatDocs.isEmpty) {
             return const Center(child: Text('No chats available.'));
           }
@@ -49,38 +48,78 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
             itemBuilder: (context, index) {
               final chatData = chatDocs[index].data() as Map<String, dynamic>;
               final chatId = chatDocs[index].id;
-              final sender = chatData['sender'];
-              final receiver = chatData['receiver'];
               final sellerShopName = chatData['sellerShopName'];
               final lastMessage = chatData['lastMessage'];
               final sellerImageUrl = chatData['sellerImageUrl'];
 
-              print('chatData: $chatData');
-
-              // You can build your chat list tile UI here
-              return ListTile(
-                leading: sellerImageUrl != null && sellerImageUrl.isNotEmpty
-                    ? CircleAvatar(
-                        backgroundImage: NetworkImage(sellerImageUrl),
-                      )
-                    : const CircleAvatar(child: Icon(Icons.store)),
-                title: Text(sellerShopName ?? ''),
-                subtitle: Text(lastMessage ?? ''),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        chatId: chatId,
-                      ),
-                    ),
-                  );
+              return Dismissible(
+                key: Key(chatId), // Unique key for each chat item
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  color: Colors.red, // Background color when swiped
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                ),
+                onDismissed: (direction) {
+                  // Handle chat deletion here
+                  _deleteChat(chatId, context);
                 },
+                child: ListTile(
+                  leading: sellerImageUrl != null && sellerImageUrl.isNotEmpty
+                      ? CircleAvatar(
+                          backgroundImage: NetworkImage(sellerImageUrl),
+                        )
+                      : const CircleAvatar(child: Icon(Icons.store)),
+                  title: Text(sellerShopName ?? ''),
+                  subtitle: Text(lastMessage ?? ''),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          chatId: chatId,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               );
             },
           );
         },
       ),
     );
+  }
+
+  void _deleteChat(String chatId, BuildContext context) {
+    // Delete the chat document from Firestore
+    FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .delete()
+        .then((value) {
+      // Show a SnackBar to indicate that the chat has been deleted
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Chat deleted.'),
+          duration: Duration(seconds: 2), // You can adjust the duration
+        ),
+      );
+
+      // Update the state to trigger a rebuild of the chat list
+      setState(() {});
+    }).catchError((error) {
+      // Handle any errors that may occur during deletion.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error deleting chat.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
   }
 }

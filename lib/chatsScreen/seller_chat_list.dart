@@ -39,7 +39,6 @@ class _SellerChatListScreenState extends State<SellerChatListScreen> {
           }
 
           final chatDocs = snapshot.data?.docs ?? [];
-          print('how many chatDocs: ${chatDocs.length}');
           if (chatDocs.isEmpty) {
             return const Center(child: Text('No chats available.'));
           }
@@ -49,13 +48,9 @@ class _SellerChatListScreenState extends State<SellerChatListScreen> {
             itemBuilder: (context, index) {
               final chatData = chatDocs[index].data() as Map<String, dynamic>;
               final chatId = chatDocs[index].id;
-              final sender = chatData['sender'];
-              final receiver = chatData['receiver'];
               final username = chatData['userUsername'];
               final lastMessage = chatData['lastMessage'];
               final userImageUrl = chatData['userImageUrl'];
-
-              print('chatData: $chatData');
 
               // You can build your chat list tile UI here
               return ListTile(

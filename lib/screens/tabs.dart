@@ -21,6 +21,7 @@ class TabsScreen extends StatefulWidget {
 class _TabsScreenState extends State<TabsScreen> {
   int _selectedPageIndex = 0;
   int _cartItemCount = 0;
+  int _chatStatusCount = 0;
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
       _cartItemsSubscription;
@@ -29,6 +30,7 @@ class _TabsScreenState extends State<TabsScreen> {
   void initState() {
     super.initState();
     _listenToCartItems(); // Start listening to cart item changes
+    _listenToChatStatus();
   }
 
   void _listenToCartItems() {
@@ -41,6 +43,21 @@ class _TabsScreenState extends State<TabsScreen> {
           .listen((snapshot) {
         setState(() {
           _cartItemCount = snapshot.docs.length; // Update cart item count
+        });
+      });
+    }
+  }
+
+  void _listenToChatStatus() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      FirebaseFirestore.instance
+          .collection('chats')
+          .where('sender', isEqualTo: currentUser.uid)
+          .snapshots()
+          .listen((snapshot) {
+        setState(() {
+          _chatStatusCount = snapshot.docs.length; // Update chat status count
         });
       });
     }
@@ -128,12 +145,40 @@ class _TabsScreenState extends State<TabsScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.message), // Add the chat icon
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.message), // Add the chat icon
+                        if (_chatStatusCount > 0) // Display chat status count
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 10,
+                                minHeight: 10,
+                              ),
+                              child: Text(
+                                _chatStatusCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => UserChatListScreen()),
+                            builder: (context) => const UserChatListScreen()),
                       );
                     },
                   ),
@@ -178,12 +223,40 @@ class _TabsScreenState extends State<TabsScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.message), // Add the chat icon
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.message), // Add the chat icon
+                        if (_chatStatusCount > 0) // Display chat status count
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 10,
+                                minHeight: 10,
+                              ),
+                              child: Text(
+                                _chatStatusCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => UserChatListScreen()),
+                            builder: (context) => const UserChatListScreen()),
                       );
                     },
                   ),

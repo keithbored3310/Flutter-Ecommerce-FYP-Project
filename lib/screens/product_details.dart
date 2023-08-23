@@ -1,3 +1,4 @@
+import 'package:ecommerce/chatsScreen/chat_screen.dart';
 import 'package:ecommerce/screens/cart_screen.dart';
 import 'package:ecommerce/screens/sellers_home_screen.dart';
 import 'package:ecommerce/userScreen/view_all_review.dart';
@@ -27,11 +28,17 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
   bool _isFavorite = false; // Track if the product is in favorites
   int _cartItemCount = 0;
 
+  late Map<String, dynamic> _sellerInfo;
+  late Map<String, dynamic> _userInfo;
+
   @override
   void initState() {
     super.initState();
     _checkIfFavorite();
     _updateCartItemCount();
+
+    _fetchSellerInfo(widget.productData['sellersId']);
+    _fetchUserInfo();
   }
 
   Future<void> _updateCartItemCount() async {
@@ -147,6 +154,35 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     return averageRating;
   }
 
+  Future<void> _fetchSellerInfo(String sellerId) async {
+    final sellerSnapshot = await FirebaseFirestore.instance
+        .collection('sellers')
+        .doc(sellerId)
+        .get();
+
+    if (sellerSnapshot.exists) {
+      setState(() {
+        _sellerInfo = sellerSnapshot.data()!;
+      });
+    }
+  }
+
+  Future<void> _fetchUserInfo() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userSnapshot.exists) {
+        setState(() {
+          _userInfo = userSnapshot.data()!;
+        });
+      }
+    }
+  }
+
   Future<void> _checkIfFavorite() async {
     final userId = _getCurrentUserId();
     if (userId != null) {
@@ -221,7 +257,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
             borderRadius:
                 BorderRadius.circular(16.0), // Adjust the radius as needed
           ),
-          title: Text('Add to Cart'),
+          title: const Text('Add to Cart'),
           content: SingleChildScrollView(
             // Wrap AddToCartDialog with SingleChildScrollView
             child: Container(
@@ -342,6 +378,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     return FirebaseFirestore.instance
         .collection('reviews')
         .where('productId', isEqualTo: widget.productId)
+        .where('status', isEqualTo: 4) // Filter by status equal to 4
         .limit(10)
         .orderBy('timestamp', descending: true)
         .snapshots();
@@ -629,8 +666,61 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chat),
-                    onPressed: () {
-                      // Add your logic for chatting with the seller here
+                    onPressed: () async {
+                      if (_sellerInfo.isEmpty || _userInfo.isEmpty) {
+                        return; // Don't proceed if information is not available
+                      }
+
+                      final currentUserUid =
+                          FirebaseAuth.instance.currentUser?.uid;
+                      final sellerId = widget.productData['sellersId'];
+
+                      if (currentUserUid != null) {
+                        final chatId = currentUserUid.compareTo(sellerId) < 0
+                            ? '$currentUserUid-$sellerId'
+                            : '$sellerId-$currentUserUid';
+
+                        final sender = currentUserUid;
+                        final receiver = sellerId;
+
+                        // Check if the chat exists
+                        final chatSnapshot = await FirebaseFirestore.instance
+                            .collection('chats')
+                            .doc(chatId)
+                            .get();
+
+                        if (chatSnapshot.exists) {
+                          // Chat exists, navigate to the chat screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(chatId: chatId),
+                            ),
+                          );
+                        } else {
+                          // Chat doesn't exist, initiate the chat
+                          await FirebaseFirestore.instance
+                              .collection('chats')
+                              .doc(chatId)
+                              .set({
+                            'sender': sender,
+                            'receiver': receiver,
+                            'lastMessage': '',
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'sellerShopName': _sellerInfo['shopName'],
+                            'sellerImageUrl': _sellerInfo['image_url'],
+                            'userUsername': _userInfo['username'],
+                            'userImageUrl': _userInfo['image_url'],
+                          });
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(chatId: chatId),
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                   const Text('Chat with Seller'),

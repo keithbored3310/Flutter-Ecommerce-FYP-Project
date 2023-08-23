@@ -1,7 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/widget/courier_drop_down.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:pdf/pdf.dart' as pdf;
+import 'package:path_provider/path_provider.dart'; // Add this import
+import 'package:flutter/services.dart'; // Add this import for permission handling
+import 'package:permission_handler/permission_handler.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:uuid/uuid.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class ManageOrderPage extends StatefulWidget {
   final String sellerId;
@@ -15,10 +24,40 @@ class ManageOrderPage extends StatefulWidget {
 class _ManageOrderPageState extends State<ManageOrderPage> {
   String? _selectedCourier;
 
+  @override
+  void initState() {
+    super.initState();
+    requestStoragePermission(); // Call the permission request in initState
+  }
+
   void updateSelectedCourier(String? courier) {
     setState(() {
       _selectedCourier = courier;
     });
+  }
+
+  Future<Map<String, dynamic>> fetchSellerData(String sellerId) async {
+    try {
+      final sellerDoc = await FirebaseFirestore.instance
+          .collection('sellers')
+          .doc(sellerId)
+          .get();
+
+      if (sellerDoc.exists) {
+        final sellerData = sellerDoc.data() as Map<String, dynamic>;
+        final shopName = sellerData['shopName'];
+        final pickupAddress = sellerData['pickupAddress'];
+
+        return {
+          'shopName': shopName,
+          'pickupAddress': pickupAddress,
+        };
+      }
+    } catch (error) {
+      print('Error fetching seller data: $error');
+    }
+
+    return {}; // Return an empty map if data cannot be fetched
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> _userOrdersStream() {
@@ -75,6 +114,102 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
     }
   }
 
+  Future<void> requestStoragePermission() async {
+    final PermissionStatus status = await Permission.storage.request();
+    if (status.isGranted) {
+      // Permission granted
+    } else {
+      // Permission denied
+      // Handle permission denied here
+    }
+  }
+
+  Future<void> generateAndSavePDF(
+    String username,
+    String phone,
+    String address,
+    String userOrderId,
+    String timestamp,
+    String? selectedCourier,
+    String sellerId,
+  ) async {
+    // Request storage permission
+    await requestStoragePermission();
+
+    // Get the external storage directory
+    final appDocDir = await getExternalStorageDirectory();
+    final path = (await getExternalStorageDirectory())?.path ?? '';
+
+    // Fetch seller data
+    final sellerData = await fetchSellerData(sellerId);
+    final shopName = sellerData['shopName'] ?? '';
+    final pickupAddress = sellerData['pickupAddress'] ?? '';
+
+    // Create a PDF document
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Order Details
+              pw.Text('Order Details',
+                  style: pw.TextStyle(
+                      font: pw.Font.helveticaBold(), fontSize: 20)),
+              pw.Divider(thickness: 2, height: 20),
+              pw.Text('User Order ID: $userOrderId'),
+              pw.Text('Timestamp: $timestamp'),
+              pw.Text('Selected Courier: $selectedCourier'),
+              pw.Divider(thickness: 2, height: 20),
+
+              // Seller Details
+              pw.Text('Seller Details',
+                  style: pw.TextStyle(
+                      font: pw.Font.helveticaBold(), fontSize: 20)),
+              pw.Divider(thickness: 2, height: 20),
+              pw.Text('Seller ID: $sellerId'),
+              pw.Text('Shop Name: $shopName'),
+              pw.Text('Pickup Address: $pickupAddress'),
+              pw.Divider(thickness: 2, height: 20),
+
+              // Receiver Details
+              pw.Text('Receiver Details',
+                  style: pw.TextStyle(
+                      font: pw.Font.helveticaBold(), fontSize: 20)),
+              pw.Divider(thickness: 2, height: 20),
+              pw.Text('Username: $username'),
+              pw.Text('Phone: $phone'),
+              pw.Text('Address: $address'),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Serialize the PDF as bytes
+    final pdfBytes = await pdf.save();
+
+    // Generate a unique PDF ID (you can use a package like 'uuid' for this)
+    final pdfId = 'pdf_${Uuid().v4()}';
+
+    // Set the PDF name to include the timestamp
+    final pdfName = '$username-$timestamp.pdf';
+    final fileName = '$pdfName';
+    // Save the PDF to external storage
+    final file = File('$path/$fileName');
+    await file.writeAsBytes(pdfBytes);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('PDF saved to external storage: ${file.path}'),
+      ),
+    );
+    // Print the path where the PDF is saved
+    print('PDF saved to external storage: ${file.path}');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,6 +247,8 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                     final quantity = userOrderData['quantity'];
                     final itemTotalPrice = userOrderData['itemTotalPrice'];
                     final status = userOrderData['status'];
+                    final timestampString = timestamp
+                        .toString(); // Format the DateTime object as a string
 
                     final statusColumn = status == 2
                         ? IconButton(
@@ -129,6 +266,27 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                                           selectedCourier: _selectedCourier,
                                           onCourierChanged:
                                               updateSelectedCourier,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                await generateAndSavePDF(
+                                                  username,
+                                                  phone,
+                                                  address,
+                                                  userOrderId,
+                                                  timestampString,
+                                                  _selectedCourier,
+                                                  widget.sellerId,
+                                                );
+                                              },
+                                              child: Text('Generate PDF'),
+                                            ),
+                                          ],
                                         ),
                                         const SizedBox(height: 20),
                                         Row(

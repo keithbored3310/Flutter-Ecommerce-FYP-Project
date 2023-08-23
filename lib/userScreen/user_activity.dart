@@ -105,6 +105,9 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(
+                              'Product Name: ${orderData['productName']}',
+                            ),
                             Text('Quantity: ${orderData['quantity']}'),
                             Text(
                                 'Total Price: RM${orderData['itemTotalPrice'].toStringAsFixed(2)}'),

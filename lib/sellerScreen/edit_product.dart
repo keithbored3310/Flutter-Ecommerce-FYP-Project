@@ -37,6 +37,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   bool _isLoading = false;
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -104,6 +106,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
+                key: _formKey, // Add this line
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -163,8 +166,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(labelText: 'Name'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a name';
+                        }
+                        return null;
                       },
                     ),
                     // Description TextField
@@ -173,8 +178,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       decoration:
                           const InputDecoration(labelText: 'Description'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a description';
+                        }
+                        return null;
                       },
                     ),
                     // Part Number TextField
@@ -183,8 +190,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       decoration:
                           const InputDecoration(labelText: 'Part Number'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a part number';
+                        }
+                        return null;
                       },
                     ),
                     // Price TextField
@@ -196,8 +205,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       },
                       decoration: const InputDecoration(labelText: 'Price'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a price';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
                       },
                     ),
                     // Quantity TextField
@@ -206,8 +220,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(labelText: 'Quantity'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a quantity';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
                       },
                     ),
                     // Discount TextField
@@ -219,8 +238,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       },
                       decoration: const InputDecoration(labelText: 'Discount'),
                       validator: (value) {
-                        // Your validation logic here
-                        // Return null if valid, an error message if not
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a discount';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
                       },
                     ),
                     // Discounted Price TextField
@@ -250,51 +274,72 @@ class _EditProductScreenState extends State<EditProductScreen> {
         _isLoading = true;
       });
 
-      // Upload the image to Firebase Storage if a new image was picked
-      String imageUrl = widget.productData['imageUrl'];
-      if (_imageFile != null) {
-        final ref = firebase_storage.FirebaseStorage.instance
-            .ref()
-            .child('product_images')
-            .child('${widget.productId}.jpg');
-        await ref.putFile(_imageFile!);
-        imageUrl = await ref.getDownloadURL();
+      // Validation check
+      if (_formKey.currentState!.validate()) {
+        // Extract the values from the text controllers
+        final updatedProductData = {
+          'name': _nameController.text,
+          'description': _descriptionController.text,
+          'partNumber': _partNumberController.text,
+          'price': double.tryParse(_priceController.text) ?? 0.0,
+          'quantity': int.tryParse(_quantityController.text) ?? 0,
+          'discount': double.tryParse(_discountController.text) ?? 0.0,
+          'discountedPrice':
+              double.tryParse(_discountedPriceController.text) ?? 0.0,
+          'brand': _selectedBrand, // Update the brand field
+          'category': _selectedCategory,
+          'type': _selectedType,
+          // Add more fields as needed
+        };
+
+        // Upload the image to Firebase Storage if a new image was picked
+        String imageUrl = widget.productData['imageUrl'];
+        if (_imageFile != null) {
+          final ref = firebase_storage.FirebaseStorage.instance
+              .ref()
+              .child('product_images')
+              .child('${widget.productId}.jpg');
+          await ref.putFile(_imageFile!);
+          imageUrl = await ref.getDownloadURL();
+        }
+
+        // Add the updated image URL to the product data
+        updatedProductData['imageUrl'] = imageUrl;
+
+        // Update the product details in Firestore
+        await FirebaseFirestore.instance
+            .collection('products')
+            .doc(widget.productId)
+            .update(updatedProductData);
+
+        // Update the userOrders collectionGroups where 'productName' matches the old product name
+        await FirebaseFirestore.instance
+            .collectionGroup('userOrders')
+            .where('productName', isEqualTo: widget.productData['name'])
+            .get()
+            .then((querySnapshot) async {
+          if (querySnapshot.docs.isNotEmpty) {
+            for (final userOrderDoc in querySnapshot.docs) {
+              await userOrderDoc.reference.update({
+                'productName':
+                    _nameController.text, // Update with the new product name
+              });
+            }
+          }
+        });
+
+        // Show a success message or handle the update success
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product details updated successfully.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Wait for a short duration before popping the edit product page
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.pop(context);
       }
-
-      // Extract the values from the text controllers
-      final updatedProductData = {
-        'name': _nameController.text,
-        'description': _descriptionController.text,
-        'partNumber': _partNumberController.text,
-        'price': double.tryParse(_priceController.text) ?? 0.0,
-        'quantity': int.tryParse(_quantityController.text) ?? 0,
-        'discount': double.tryParse(_discountController.text) ?? 0.0,
-        'discountedPrice':
-            double.tryParse(_discountedPriceController.text) ?? 0.0,
-        'imageUrl': imageUrl, // Update the image URL
-        'brand': _selectedBrand, // Update the brand field
-        'category': _selectedCategory,
-        'type': _selectedType,
-        // Add more fields as needed
-      };
-
-      // Update the product details in Firestore
-      await FirebaseFirestore.instance
-          .collection('products')
-          .doc(widget.productId)
-          .update(updatedProductData);
-
-      // Show a success message or handle the update success
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Product details updated successfully.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // Wait for a short duration before popping the edit product page
-      await Future.delayed(const Duration(seconds: 2));
-      Navigator.pop(context);
     } catch (e) {
       // Handle any errors that may occur during the update process
       print('Error updating product details: $e');

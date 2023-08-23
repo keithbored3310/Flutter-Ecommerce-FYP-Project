@@ -33,6 +33,7 @@ class ViewAllReviewsPage extends StatelessWidget {
     return FirebaseFirestore.instance
         .collection('reviews')
         .where('productId', isEqualTo: productId)
+        .where('status', isEqualTo: 4) // Filter by status equal to 4
         .orderBy('timestamp', descending: true)
         .snapshots();
   }

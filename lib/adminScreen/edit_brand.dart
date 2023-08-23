@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditBrandPage extends StatefulWidget {
-  const EditBrandPage({super.key, required this.brandName});
+  const EditBrandPage({Key? key, required this.brandName}) : super(key: key);
   final String brandName;
 
   @override
@@ -30,6 +30,7 @@ class _EditBrandPageState extends State<EditBrandPage> {
       _isSaving = true;
     });
 
+    // Step 1: Update the brand name in the 'brands' collection
     FirebaseFirestore.instance
         .collection('brands')
         .where('brand', isEqualTo: widget.brandName)
@@ -39,15 +40,39 @@ class _EditBrandPageState extends State<EditBrandPage> {
         String documentID = querySnapshot.docs.first.id;
         FirebaseFirestore.instance.collection('brands').doc(documentID).update({
           'brand': newBrandName,
-        }).then((_) async {
+        }).then((_) {
+          // Step 2: Update the brand name in the 'products' collection
+          FirebaseFirestore.instance
+              .collection('products')
+              .where('brand', isEqualTo: widget.brandName)
+              .get()
+              .then((productQuerySnapshot) {
+            if (productQuerySnapshot.docs.isNotEmpty) {
+              for (var productDoc in productQuerySnapshot.docs) {
+                String productId = productDoc.id;
+                FirebaseFirestore.instance
+                    .collection('products')
+                    .doc(productId)
+                    .update({
+                  'brand': newBrandName,
+                }).catchError((error) {
+                  print('Error updating product brand: $error');
+                });
+              }
+            }
+          }).catchError((error) {
+            print('Error querying products: $error');
+          });
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Brand updated successfully'),
               duration: Duration(seconds: 2),
             ),
           );
-          await Future.delayed(const Duration(seconds: 2));
-          Navigator.pop(context, newBrandName);
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pop(context, newBrandName);
+          });
         }).catchError((error) {
           print('Error updating brand name: $error');
         });
@@ -91,12 +116,12 @@ class _EditBrandPageState extends State<EditBrandPage> {
             ElevatedButton(
               onPressed: _isSaving
                   ? null
-                  : () async {
+                  : () {
                       String newBrandName = _newBrandController.text;
                       _updateBrandName(newBrandName);
                     },
               child: _isSaving
-                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator()
                   : const Text('Save'),
             ),
           ],

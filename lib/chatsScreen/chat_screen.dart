@@ -23,38 +23,26 @@ class _ChatScreenState extends State<ChatScreen> {
   late TextEditingController _messageController;
   List<QueryDocumentSnapshot> _messages = [];
   bool _isLoading = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _currentUserUid = _auth.currentUser!.uid;
     _messageController = TextEditingController();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge &&
+          _scrollController.position.pixels != 0) {
+        // Do not fetch more messages here
+      }
+    });
   }
-
-  // Future<Map<String, dynamic>> _fetchChatParticipantInfo() async {
-  //   final chatDoc =
-  //       await _firestore.collection('chats').doc(widget.chatId).get();
-
-  //   if (chatDoc.exists) {
-  //     final sellerShopName = chatDoc['sellerShopName'];
-  //     final sellerImageUrl = chatDoc['sellerImageUrl'];
-
-  //     return {
-  //       'sellerShopName': sellerShopName,
-  //       'sellerImageUrl': sellerImageUrl,
-  //     };
-  //   }
-
-  //   return {
-  //     'sellerShopName': 'Unknown Seller',
-  //     'sellerImageUrl': '',
-  //   };
-  // }
 
   Future<void> _fetchMoreMessages() async {
     if (_messages.isEmpty) return;
 
-    final lastMessage = _messages.last;
+    final lastMessage = _messages.first;
 
     setState(() {
       _isLoading = true;
@@ -64,21 +52,19 @@ class _ChatScreenState extends State<ChatScreen> {
         .collection('chats')
         .doc(widget.chatId)
         .collection('messages')
-        .orderBy('timestamp', descending: true)
+        .orderBy('timestamp', descending: true) // Keep it descending
         .startAfterDocument(lastMessage)
-        .limit(10) // Fetch the next 10 messages
         .get()
         .then((querySnapshot) => querySnapshot.docs);
 
     setState(() {
       _isLoading = false;
-      _messages.addAll(newMessages);
+      _messages.insertAll(0, newMessages); // Insert at the beginning
     });
   }
 
   Future<void> _sendMessage(String text) async {
-    if (text.trim().isEmpty)
-      return; // Replace userUsername with the actual variable holding the user's username
+    if (text.trim().isEmpty) return;
 
     await _firestore
         .collection('chats')
@@ -95,6 +81,13 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _messageController.clear();
     });
+
+    // Scroll to the latest message
+    _scrollController.animateTo(
+      0.0,
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   Future<void> _updateLastMessage(String text) async {
@@ -112,7 +105,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final imageUrl = await taskSnapshot.ref.getDownloadURL();
 
-    // Add the image message to the messages subcollection
     await _firestore
         .collection('chats')
         .doc(widget.chatId)
@@ -123,8 +115,14 @@ class _ChatScreenState extends State<ChatScreen> {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Update the lastMessage in the chat document
     await _updateLastMessage('Image sent');
+
+    // Scroll to the latest message
+    _scrollController.animateTo(
+      0.0,
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
@@ -136,76 +134,67 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                if (!_isLoading &&
-                    notification is ScrollEndNotification &&
-                    notification.metrics.extentAfter == 0) {
-                  // User has reached the end of the list, fetch more messages
-                  _fetchMoreMessages();
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: _firestore
+                  .collection('chats')
+                  .doc(widget.chatId)
+                  .collection('messages')
+                  .orderBy('timestamp', descending: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
                 }
-                return false;
-              },
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: _firestore
-                    .collection('chats')
-                    .doc(widget.chatId)
-                    .collection('messages')
-                    .orderBy('timestamp')
-                    .limit(10)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
 
-                  final messages = snapshot.data!.docs;
-                  _messages = messages;
+                final messages = snapshot.data!.docs;
+                _messages = messages;
 
-                  return ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index].data();
-                      final bool isCurrentUser =
-                          message['senderUid'] == _currentUserUid;
+                return ListView.builder(
+                  controller: _scrollController,
+                  reverse: true, // Display new messages at the bottom
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[messages.length - 1 - index]
+                        .data(); // Reverse the order
+                    final bool isCurrentUser =
+                        message['senderUid'] == _currentUserUid;
 
-                      return Align(
-                        alignment: isCurrentUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 4, horizontal: 8),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isCurrentUser
-                                ? Colors.blue
-                                : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: isCurrentUser
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
-                            children: [
-                              if (message['imageUrl'] != null)
-                                Image.network(
-                                  message['imageUrl'],
-                                  height: 150, // Adjust the height as needed
-                                ),
-                              if (message['text'] != null)
-                                Text(
-                                  message['text'],
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                            ],
-                          ),
+                    return Align(
+                      alignment: isCurrentUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isCurrentUser
+                              ? Colors.blue
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        child: Column(
+                          crossAxisAlignment: isCurrentUser
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            if (message['imageUrl'] != null)
+                              Image.network(
+                                message['imageUrl'],
+                                height: 150,
+                              ),
+                            if (message['text'] != null)
+                              Text(
+                                message['text'],
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
           Padding(

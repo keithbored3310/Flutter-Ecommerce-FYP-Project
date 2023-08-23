@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditTypePage extends StatefulWidget {
-  const EditTypePage({super.key, required this.typeName});
+  const EditTypePage({Key? key, required this.typeName}) : super(key: key);
   final String typeName;
 
   @override
-  State<EditTypePage> createState() => _EditTypePageState();
+  _EditTypePageState createState() => _EditTypePageState();
 }
 
 class _EditTypePageState extends State<EditTypePage> {
@@ -25,49 +25,76 @@ class _EditTypePageState extends State<EditTypePage> {
     super.dispose();
   }
 
-  void _updateTypeName(String newTypeName) {
+  Future<void> _updateTypeName(String newTypeName) async {
     setState(() {
       _isSaving = true;
     });
-    // Update the Type name in Firestore using the document ID
-    FirebaseFirestore.instance
-        .collection('types')
-        .where('type', isEqualTo: widget.typeName)
-        .get()
-        .then((querySnapshot) {
-      if (querySnapshot.docs.isNotEmpty) {
-        String documentID = querySnapshot.docs.first.id;
-        FirebaseFirestore.instance.collection('types').doc(documentID).update({
+
+    try {
+      // Update the Type name in Firestore using the document ID
+      final typeQuerySnapshot = await FirebaseFirestore.instance
+          .collection('types')
+          .where('type', isEqualTo: widget.typeName)
+          .get();
+
+      if (typeQuerySnapshot.docs.isNotEmpty) {
+        final typeDocumentID = typeQuerySnapshot.docs.first.id;
+
+        await FirebaseFirestore.instance
+            .collection('types')
+            .doc(typeDocumentID)
+            .update({
           'type': newTypeName,
-        }).then((_) async {
-          // Type name updated successfully
-          // You can add a snackbar or any other UI feedback here
-          // After updating, pop the page and pass the new Type name to the previous screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Type updated successfully'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          await Future.delayed(const Duration(seconds: 2));
-          Navigator.pop(context, newTypeName);
-        }).catchError((error) {
-          // Error occurred while updating the Type name
-          print('Error updating Type name: $error');
         });
+
+        // Now, update the products collection where 'type' matches the old type name
+        final productQuerySnapshot = await FirebaseFirestore.instance
+            .collection('products')
+            .where('type', isEqualTo: widget.typeName)
+            .get();
+
+        if (productQuerySnapshot.docs.isNotEmpty) {
+          for (final productDoc in productQuerySnapshot.docs) {
+            final productId = productDoc.id;
+            await FirebaseFirestore.instance
+                .collection('products')
+                .doc(productId)
+                .update({
+              'type': newTypeName,
+            });
+          }
+        }
+
+        // Type name updated successfully
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Type updated successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.pop(context, newTypeName);
       } else {
         // Type with the original name not found in Firestore
         print('Type not found in Firestore');
       }
+    } catch (error) {
+      // Handle any errors that occur during the update process
+      print('Error updating Type name: $error');
+
+      // Show an error message or handle the error appropriately
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error updating Type name.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
       setState(() {
         _isSaving = false;
       });
-    }).catchError((error) {
-      print('Error querying Firestore: $error');
-      setState(() {
-        _isSaving = false;
-      });
-    });
+    }
   }
 
   @override
@@ -83,7 +110,7 @@ class _EditTypePageState extends State<EditTypePage> {
           children: [
             TextFormField(
               initialValue: widget.typeName,
-              enabled: false, // Disable editing for the original Type name
+              enabled: false,
               decoration: const InputDecoration(labelText: 'Old Type Name'),
             ),
             const SizedBox(height: 16),
@@ -96,11 +123,11 @@ class _EditTypePageState extends State<EditTypePage> {
               onPressed: _isSaving
                   ? null
                   : () async {
-                      String newTypeName = _newTypeController.text;
-                      _updateTypeName(newTypeName);
+                      final newTypeName = _newTypeController.text;
+                      await _updateTypeName(newTypeName);
                     },
               child: _isSaving
-                  ? const CircularProgressIndicator() // Show CircularProgressIndicator while saving
+                  ? const CircularProgressIndicator()
                   : const Text('Save'),
             ),
           ],
