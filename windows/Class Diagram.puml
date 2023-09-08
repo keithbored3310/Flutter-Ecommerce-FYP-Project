@@ -1,0 +1,1373 @@
+@startuml
+set namespaceSeparator ::
+
+class "ecommerce::adminScreen::add_brand.dart::AddBrandPage" {
+  +State<AddBrandPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::add_brand.dart::AddBrandPage"
+
+class "ecommerce::adminScreen::add_brand.dart::_AddBrandPageState" {
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _brandController
+  -String? _errorMessage
+  -bool _isAddingBrand
+  +Widget build()
+  -dynamic _addBrand()
+  -dynamic _checkBrandName()
+  +void addBrandToFirestore()
+  -dynamic _getNextAutoIncrementNumber()
+}
+
+"ecommerce::adminScreen::add_brand.dart::_AddBrandPageState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::adminScreen::add_brand.dart::_AddBrandPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::add_brand.dart::_AddBrandPageState"
+
+class "ecommerce::adminScreen::add_category.dart::AddCategoryPage" {
+  +State<AddCategoryPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::add_category.dart::AddCategoryPage"
+
+class "ecommerce::adminScreen::add_category.dart::_AddCategoryPageState" {
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _categoryController
+  -String? _errorMessage
+  -bool _isAddingCategory
+  +Widget build()
+  -dynamic _addCategory()
+  -dynamic _checkCategoryName()
+  +void addCategoryToFirestore()
+  -dynamic _getNextAutoIncrementNumber()
+}
+
+"ecommerce::adminScreen::add_category.dart::_AddCategoryPageState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::adminScreen::add_category.dart::_AddCategoryPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::add_category.dart::_AddCategoryPageState"
+
+class "ecommerce::adminScreen::add_courier.dart::AddCourierPage" {
+  +State<AddCourierPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::add_courier.dart::AddCourierPage"
+
+class "ecommerce::adminScreen::add_courier.dart::_AddCourierPageState" {
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _courierController
+  -String? _errorMessage
+  -bool _isAddingCourier
+  +Widget build()
+  -dynamic _addCourier()
+  -dynamic _checkCourierName()
+  +void addCourierToFirestore()
+  -dynamic _getNextAutoIncrementNumber()
+}
+
+"ecommerce::adminScreen::add_courier.dart::_AddCourierPageState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::adminScreen::add_courier.dart::_AddCourierPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::add_courier.dart::_AddCourierPageState"
+
+class "ecommerce::adminScreen::add_type.dart::AddTypePage" {
+  +State<AddTypePage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::add_type.dart::AddTypePage"
+
+class "ecommerce::adminScreen::add_type.dart::_AddTypePageState" {
+  -GlobalKey<FormState> _formKey
+  -TextEditingController _typeController
+  -String? _errorMessage
+  -bool _isAddingType
+  +Widget build()
+  -dynamic _addType()
+  -dynamic _checkTypeName()
+  +void addTypeToFirestore()
+  -dynamic _getNextAutoIncrementNumber()
+}
+
+"ecommerce::adminScreen::add_type.dart::_AddTypePageState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::adminScreen::add_type.dart::_AddTypePageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::add_type.dart::_AddTypePageState"
+
+class "ecommerce::adminScreen::brand_screen.dart::BrandScreen" {
+  +State<BrandScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::brand_screen.dart::BrandScreen"
+
+class "ecommerce::adminScreen::brand_screen.dart::_BrandScreenState" {
+  -bool _sortByAscending
+  -void _showDeleteConfirmationDialog()
+  -void _deleteBrand()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::brand_screen.dart::_BrandScreenState"
+
+class "ecommerce::adminScreen::category_screen.dart::CategoryScreen" {
+  +State<CategoryScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::category_screen.dart::CategoryScreen"
+
+class "ecommerce::adminScreen::category_screen.dart::_CategoryScreenState" {
+  -bool _sortByAscending
+  -void _showDeleteConfirmationDialog()
+  -void _deleteCategory()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::category_screen.dart::_CategoryScreenState"
+
+class "ecommerce::adminScreen::courier_screen.dart::CourierScreen" {
+  +State<CourierScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::courier_screen.dart::CourierScreen"
+
+class "ecommerce::adminScreen::courier_screen.dart::_CourierScreenState" {
+  -bool _sortByAscending
+  -void _showDeleteConfirmationDialog()
+  -void _deleteCourier()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::courier_screen.dart::_CourierScreenState"
+
+class "ecommerce::adminScreen::edit_brand.dart::EditBrandPage" {
+  +String brandName
+  +State<EditBrandPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::edit_brand.dart::EditBrandPage"
+
+class "ecommerce::adminScreen::edit_brand.dart::_EditBrandPageState" {
+  -TextEditingController _newBrandController
+  -bool _isSaving
+  +void initState()
+  +void dispose()
+  -void _updateBrandName()
+  +Widget build()
+}
+
+"ecommerce::adminScreen::edit_brand.dart::_EditBrandPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::edit_brand.dart::_EditBrandPageState"
+
+class "ecommerce::adminScreen::edit_category.dart::EditCategoryPage" {
+  +String categoryName
+  +State<EditCategoryPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::edit_category.dart::EditCategoryPage"
+
+class "ecommerce::adminScreen::edit_category.dart::_EditCategoryPageState" {
+  -TextEditingController _newCategoryController
+  -bool _isSaving
+  +void initState()
+  +void dispose()
+  -void _updateCategoryName()
+  +Widget build()
+}
+
+"ecommerce::adminScreen::edit_category.dart::_EditCategoryPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::edit_category.dart::_EditCategoryPageState"
+
+class "ecommerce::adminScreen::edit_courier.dart::EditCourierPage" {
+  +String courierName
+  +State<EditCourierPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::edit_courier.dart::EditCourierPage"
+
+class "ecommerce::adminScreen::edit_courier.dart::_EditCourierPageState" {
+  -TextEditingController _newCourierController
+  -bool _isSaving
+  +void initState()
+  +void dispose()
+  -dynamic _updateCourierName()
+  +Widget build()
+}
+
+"ecommerce::adminScreen::edit_courier.dart::_EditCourierPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::edit_courier.dart::_EditCourierPageState"
+
+class "ecommerce::adminScreen::edit_type.dart::EditTypePage" {
+  +String typeName
+  +_EditTypePageState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::edit_type.dart::EditTypePage"
+
+class "ecommerce::adminScreen::edit_type.dart::_EditTypePageState" {
+  -TextEditingController _newTypeController
+  -bool _isSaving
+  +void initState()
+  +void dispose()
+  -dynamic _updateTypeName()
+  +Widget build()
+}
+
+"ecommerce::adminScreen::edit_type.dart::_EditTypePageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::edit_type.dart::_EditTypePageState"
+
+class "ecommerce::adminScreen::type_screen.dart::TypeScreen" {
+  +State<TypeScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::adminScreen::type_screen.dart::TypeScreen"
+
+class "ecommerce::adminScreen::type_screen.dart::_TypeScreenState" {
+  -bool _sortByAscending
+  -void _showDeleteConfirmationDialog()
+  -void _deleteType()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::adminScreen::type_screen.dart::_TypeScreenState"
+
+class "ecommerce::chatsScreen::chat_screen.dart::ChatScreen" {
+  +String chatId
+  +State<ChatScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::chatsScreen::chat_screen.dart::ChatScreen"
+
+class "ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" {
+  -FirebaseAuth _auth
+  -FirebaseFirestore _firestore
+  -FirebaseStorage _storage
+  -String _currentUserUid
+  -TextEditingController _messageController
+  -List<QueryDocumentSnapshot<Object?>> _messages
+  -bool _isLoading
+  -ScrollController _scrollController
+  +void initState()
+  -dynamic _fetchMoreMessages()
+  -dynamic _sendMessage()
+  -dynamic _updateLastMessage()
+  -dynamic _sendImage()
+  +Widget build()
+}
+
+"ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" o-- "firebase_auth::firebase_auth.dart::FirebaseAuth"
+"ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+"ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" o-- "firebase_storage::firebase_storage.dart::FirebaseStorage"
+"ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState" o-- "flutter::src::widgets::scroll_controller.dart::ScrollController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::chatsScreen::chat_screen.dart::_ChatScreenState"
+
+class "ecommerce::chatsScreen::seller_chat_list.dart::SellerChatListScreen" {
+  +String sellerId
+  +State<SellerChatListScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::chatsScreen::seller_chat_list.dart::SellerChatListScreen"
+
+class "ecommerce::chatsScreen::seller_chat_list.dart::_SellerChatListScreenState" {
+  +String currentUserUid
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::chatsScreen::seller_chat_list.dart::_SellerChatListScreenState"
+
+class "ecommerce::chatsScreen::user_chat_list.dart::UserChatListScreen" {
+  +State<UserChatListScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::chatsScreen::user_chat_list.dart::UserChatListScreen"
+
+class "ecommerce::chatsScreen::user_chat_list.dart::_UserChatListScreenState" {
+  +String currentUserUid
+  +void initState()
+  +Widget build()
+  -void _deleteChat()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::chatsScreen::user_chat_list.dart::_UserChatListScreenState"
+
+class "ecommerce::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions ios
+  {static} +FirebaseOptions currentPlatform
+}
+
+"ecommerce::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "ecommerce::main.dart::MyApp" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::main.dart::MyApp"
+
+class "ecommerce::models::brand.dart::Brand" {
+  +String id
+  +String brand
+  +Map<String, dynamic> toJson()
+}
+
+class "ecommerce::models::category.dart::Category" {
+  +String id
+  +String category
+  +Map<String, dynamic> toJson()
+}
+
+class "ecommerce::models::product.dart::Product" {
+  +String id
+  +List<Map<String, dynamic>> brand
+  +List<Map<String, dynamic>> category
+  +double discount
+  +double discountedPrice
+  +String name
+  +String description
+  +int partNumber
+  +double price
+  +int quantity
+  +List<Map<String, dynamic>> type
+}
+
+class "ecommerce::models::seller.dart::Seller" {
+  +String sellerId
+  +String companyName
+  +String registrationNumber
+  +String shopName
+  +String pickupAddress
+  +String email
+  +String phoneNumber
+  +String imageUrl
+}
+
+class "ecommerce::models::type.dart::Type" {
+  +String id
+  +String type
+  +Map<String, dynamic> toJson()
+}
+
+class "ecommerce::models::user.dart::User" {
+  +String userId
+  +String address
+  +String email
+  +String ic
+  +String imageUrl
+  +String password
+  +String phone
+  +String username
+}
+
+class "ecommerce::screens::about_us.dart::AboutUsScreen" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::screens::about_us.dart::AboutUsScreen"
+
+class "ecommerce::screens::account_details.dart::AccountDetailsScreen" {
+  +State<AccountDetailsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::account_details.dart::AccountDetailsScreen"
+
+class "ecommerce::screens::account_details.dart::_AccountDetailsScreenState" {
+  +int toPayCount
+  +int toShipCount
+  +int toReceiveCount
+  +int toRateCount
+  +Stream<DocumentSnapshot<Map<String, dynamic>>> isSellerStream
+  -StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _streamSubscription
+  -bool _isCurrentUserSeller
+  -String? _sellerId
+  -dynamic _refreshData()
+  +void initState()
+  +dynamic fetchOrderCounts()
+  -dynamic _updateOrderCounts()
+  -void _navigateToDeliveryPage()
+  +void dispose()
+  +Widget build()
+}
+
+"ecommerce::screens::account_details.dart::_AccountDetailsScreenState" o-- "dart::async::Stream<DocumentSnapshot<Map<String, dynamic>>>"
+"ecommerce::screens::account_details.dart::_AccountDetailsScreenState" o-- "dart::async::StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::account_details.dart::_AccountDetailsScreenState"
+
+class "ecommerce::screens::auth.dart::AuthScreen" {
+  +State<AuthScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::auth.dart::AuthScreen"
+
+class "ecommerce::screens::auth.dart::_AuthScreenState" {
+  -GlobalKey<FormState> _form
+  -bool _isLogin
+  -String _enteredEmail
+  -String _enteredUsername
+  -String _enteredPassword
+  -String _enteredPhone
+  -String _enteredIC
+  -String _enteredAddress
+  -File? _selectedImage
+  -bool _isAuthenticating
+  -bool _isPasswordVisible
+  -void _submit()
+  -dynamic _getNextAutoIncrementNumber()
+  +Widget build()
+}
+
+"ecommerce::screens::auth.dart::_AuthScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::screens::auth.dart::_AuthScreenState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::auth.dart::_AuthScreenState"
+
+class "ecommerce::screens::cart_screen.dart::CartScreen" {
+  +State<CartScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::cart_screen.dart::CartScreen"
+
+class "ecommerce::screens::cart_screen.dart::_CartScreenState" {
+  +String userUid
+  +Stream<QuerySnapshot<Object?>> cartItemsStream
+  +List<String> selectedItems
+  +Map<String, dynamic> productData
+  +int maxQuantity
+  -TextEditingController _quantityController
+  +void initState()
+  +dynamic fetchUserUid()
+  +void initializeCartItemsStream()
+  +void toggleItemSelection()
+  +bool isItemSelected()
+  +double calculateTotalPrice()
+  +dynamic updateCartItemQuantity()
+  -dynamic _fetchProductDataAndMaxQuantity()
+  +void showCheckoutDialog()
+  +dynamic fetchSelectedItemsFromFirestore()
+  +void dispose()
+  +Widget build()
+}
+
+"ecommerce::screens::cart_screen.dart::_CartScreenState" o-- "dart::async::Stream<QuerySnapshot<Object>>"
+"ecommerce::screens::cart_screen.dart::_CartScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::cart_screen.dart::_CartScreenState"
+
+class "ecommerce::screens::cart_screen.dart::QuantityAdjustment" {
+  +int initialQuantity
+  +int maxQuantity
+  +void Function(int) onQuantityChanged
+  +State<QuantityAdjustment> createState()
+}
+
+"ecommerce::screens::cart_screen.dart::QuantityAdjustment" o-- "flutter::src::foundation::basic_types.dart::void Function(int)"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::cart_screen.dart::QuantityAdjustment"
+
+class "ecommerce::screens::cart_screen.dart::_QuantityAdjustmentState" {
+  -int _currentQuantity
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::cart_screen.dart::_QuantityAdjustmentState"
+
+class "ecommerce::screens::cart_screen.dart::CheckoutDialog" {
+  +List<DocumentSnapshot<Object?>> selectedItems
+  +String userUid
+  +_CheckoutDialogState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::cart_screen.dart::CheckoutDialog"
+
+class "ecommerce::screens::cart_screen.dart::_CheckoutDialogState" {
+  +String username
+  +String address
+  +String phone
+  +double totalOrderPrice
+  +int amountOfUserOrders
+  +double shippingFees
+  +double finalPrice
+  +void initState()
+  +void refreshOrderDetails()
+  +void fetchUserInfo()
+  +double calculateTotalPrice()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::cart_screen.dart::_CheckoutDialogState"
+
+class "ecommerce::screens::favorite_product.dart::FavoriteProductGridScreen" {
+  +String userId
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::screens::favorite_product.dart::FavoriteProductGridScreen"
+
+class "ecommerce::screens::homepage.dart::HomepageScreen" {
+  +State<HomepageScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::homepage.dart::HomepageScreen"
+
+class "ecommerce::screens::homepage.dart::_HomepageScreenState" {
+  -dynamic _fetchProducts()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::homepage.dart::_HomepageScreenState"
+
+class "ecommerce::screens::product_category.dart::ProductCategoryScreen" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::screens::product_category.dart::ProductCategoryScreen"
+
+class "ecommerce::screens::product_details.dart::ProductDetailsUserScreen" {
+  +Map<String, dynamic> productData
+  +int maxQuantity
+  +String productId
+  +State<ProductDetailsUserScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::product_details.dart::ProductDetailsUserScreen"
+
+class "ecommerce::screens::product_details.dart::_ProductDetailsUserScreenState" {
+  -bool _isFavorite
+  -int _cartItemCount
+  -Map<String, dynamic> _sellerInfo
+  -Map<String, dynamic> _userInfo
+  +void initState()
+  -dynamic _updateCartItemCount()
+  -Widget _buildDetailItem()
+  -Widget _buildRatingStars()
+  +dynamic fetchAverageRating()
+  +dynamic fetchSellerAverageRating()
+  -dynamic _fetchSellerInfo()
+  -dynamic _fetchUserInfo()
+  -dynamic _checkIfFavorite()
+  -Widget _buildAddToCartButton()
+  -dynamic _toggleFavorite()
+  -void _showAddToCartDialog()
+  -String? _getCurrentUserId()
+  -Widget _buildSellerInfoBox()
+  -Stream<QuerySnapshot<Map<String, dynamic>>> _fetchProductReviewsStream()
+  -void _viewAllReviews()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::product_details.dart::_ProductDetailsUserScreenState"
+
+class "ecommerce::screens::product_grid_screen.dart::ProductGridScreen" {
+  +String category
+  +State<ProductGridScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::product_grid_screen.dart::ProductGridScreen"
+
+class "ecommerce::screens::product_grid_screen.dart::_ProductGridScreenState" {
+  -GlobalKey<RefreshIndicatorState> _refreshIndicatorKey
+  -String _searchText
+  -FilterOptions _filterOptions
+  -String? _selectedBrand
+  -String? _selectedType
+  -Widget _searchBar()
+  +dynamic refreshProductList()
+  -dynamic _showSearchDialog()
+  +List<QueryDocumentSnapshot<Map<String, dynamic>>> getFilteredAndSortedProducts()
+  +Widget build()
+}
+
+"ecommerce::screens::product_grid_screen.dart::_ProductGridScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<RefreshIndicatorState>"
+"ecommerce::screens::product_grid_screen.dart::_ProductGridScreenState" o-- "ecommerce::widget::filter_dialog_category.dart::FilterOptions"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::product_grid_screen.dart::_ProductGridScreenState"
+
+class "ecommerce::screens::product_panel.dart::ProductPanelScreen" {
+  +String query
+  +State<ProductPanelScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::product_panel.dart::ProductPanelScreen"
+
+class "ecommerce::screens::product_panel.dart::_ProductPanelScreenState" {
+  -FilterOptions _filterOptions
+  -String? _selectedBrand
+  -String? _selectedCategory
+  -String? _selectedType
+  +List<QueryDocumentSnapshot<Map<String, dynamic>>> getFilteredAndSortedProducts()
+  +Widget build()
+}
+
+"ecommerce::screens::product_panel.dart::_ProductPanelScreenState" o-- "ecommerce::widget::filter_dialog.dart::FilterOptions"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::product_panel.dart::_ProductPanelScreenState"
+
+class "ecommerce::screens::search_screen.dart::SearchScreen" {
+  +String? initialQuery
+  +State<SearchScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::search_screen.dart::SearchScreen"
+
+class "ecommerce::screens::search_screen.dart::_SearchScreenState" {
+  -TextEditingController _searchController
+  +List<String> searchRecords
+  -dynamic _refreshData()
+  -void _clearSearchRecords()
+  -void _performSearch()
+  -void _loadSearchRecords()
+  +void initState()
+  +void dispose()
+  +Widget build()
+}
+
+"ecommerce::screens::search_screen.dart::_SearchScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::search_screen.dart::_SearchScreenState"
+
+class "ecommerce::screens::sellers_home_screen.dart::SellerHomePage" {
+  +String sellerId
+  +State<SellerHomePage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::sellers_home_screen.dart::SellerHomePage"
+
+class "ecommerce::screens::sellers_home_screen.dart::_SellerHomePageState" {
+  -String _searchText
+  -Map<String, dynamic> _sellerInfo
+  -Map<String, dynamic> _userInfo
+  +void initState()
+  -dynamic _fetchSellerInfo()
+  -dynamic _fetchUserInfo()
+  -Widget _buildRatingStars()
+  +dynamic fetchSellerAverageRating()
+  -dynamic _showSearchDialog()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::sellers_home_screen.dart::_SellerHomePageState"
+
+class "ecommerce::screens::seller_information.dart::SellerInformationPage" {
+  +String sellerId
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::screens::seller_information.dart::SellerInformationPage"
+
+class "ecommerce::screens::tabs.dart::TabsScreen" {
+  +State<TabsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::screens::tabs.dart::TabsScreen"
+
+class "ecommerce::screens::tabs.dart::_TabsScreenState" {
+  -int _selectedPageIndex
+  -int _cartItemCount
+  -int _chatStatusCount
+  -StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _cartItemsSubscription
+  +void initState()
+  -void _listenToCartItems()
+  -void _listenToChatStatus()
+  +void dispose()
+  -void _selectPage()
+  +Widget build()
+}
+
+"ecommerce::screens::tabs.dart::_TabsScreenState" o-- "dart::async::StreamSubscription<QuerySnapshot<Map<String, dynamic>>>"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::screens::tabs.dart::_TabsScreenState"
+
+class "ecommerce::sellerScreen::add_product.dart::AddProductScreen" {
+  +State<AddProductScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::add_product.dart::AddProductScreen"
+
+class "ecommerce::sellerScreen::add_product.dart::_AddProductScreenState" {
+  -GlobalKey<FormState> _formKey
+  -String? _selectedBrand
+  -String? _selectedCategory
+  -String? _selectedType
+  -TextEditingController _nameController
+  -TextEditingController _descriptionController
+  -TextEditingController _partNumberController
+  -TextEditingController _quantityController
+  -TextEditingController _priceController
+  -TextEditingController _discountController
+  -TextEditingController _discountedPriceController
+  -bool _isSaving
+  -File? _imageFile
+  -String? _getCurrentUserId()
+  -Widget _buildImagePreview()
+  -void _calculateDiscountPrice()
+  -dynamic _pickImage()
+  -dynamic _saveProduct()
+  -dynamic _getNextAutoIncrementNumber()
+  +Widget build()
+}
+
+"ecommerce::sellerScreen::add_product.dart::_AddProductScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::sellerScreen::add_product.dart::_AddProductScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::sellerScreen::add_product.dart::_AddProductScreenState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::add_product.dart::_AddProductScreenState"
+
+class "ecommerce::sellerScreen::become_seller.dart::SellerRegistrationScreen" {
+  +State<SellerRegistrationScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::become_seller.dart::SellerRegistrationScreen"
+
+class "ecommerce::sellerScreen::become_seller.dart::_SellerRegistrationScreenState" {
+  -GlobalKey<FormState> _formKey
+  +TextEditingController companyNameController
+  +TextEditingController registrationNumberController
+  +TextEditingController shopNameController
+  +TextEditingController pickupAddressController
+  +TextEditingController emailController
+  +TextEditingController phoneNumberController
+  -bool _isSubmitting
+  -File? _imageFile
+  -Widget _buildImagePreview()
+  -dynamic _pickImage()
+  -dynamic _submitRegistration()
+  -dynamic _getNextAutoIncrementNumber()
+  +Widget build()
+}
+
+"ecommerce::sellerScreen::become_seller.dart::_SellerRegistrationScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::sellerScreen::become_seller.dart::_SellerRegistrationScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::sellerScreen::become_seller.dart::_SellerRegistrationScreenState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::become_seller.dart::_SellerRegistrationScreenState"
+
+class "ecommerce::sellerScreen::edit_product.dart::EditProductScreen" {
+  +String productId
+  +Map<String, dynamic> productData
+  +State<EditProductScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::edit_product.dart::EditProductScreen"
+
+class "ecommerce::sellerScreen::edit_product.dart::_EditProductScreenState" {
+  -TextEditingController _nameController
+  -TextEditingController _descriptionController
+  -TextEditingController _partNumberController
+  -TextEditingController _priceController
+  -TextEditingController _quantityController
+  -TextEditingController _discountController
+  -TextEditingController _discountedPriceController
+  -String? _selectedBrand
+  -String? _selectedCategory
+  -String? _selectedType
+  -bool _isLoading
+  -GlobalKey<FormState> _formKey
+  -File? _imageFile
+  +void initState()
+  -void _calculateDiscountPrice()
+  -Widget _buildImagePreview()
+  -dynamic _pickImage()
+  +Widget build()
+  -dynamic _saveProductChanges()
+}
+
+"ecommerce::sellerScreen::edit_product.dart::_EditProductScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::sellerScreen::edit_product.dart::_EditProductScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"ecommerce::sellerScreen::edit_product.dart::_EditProductScreenState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::edit_product.dart::_EditProductScreenState"
+
+class "ecommerce::sellerScreen::edit_seller.dart::EditSellerScreen" {
+  +String sellerId
+  +State<EditSellerScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::edit_seller.dart::EditSellerScreen"
+
+class "ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState" {
+  -TextEditingController _shopNameController
+  -TextEditingController _pickupAddressController
+  -TextEditingController _emailController
+  -TextEditingController _phoneNumberController
+  -File? _profileImage
+  -ImagePicker _imagePicker
+  -ImageProvider<Object>? _avatarImage
+  +void initState()
+  -void _fetchSellerData()
+  -void _updateSellerData()
+  -dynamic _onWillPop()
+  -dynamic _pickImageFromCamera()
+  -dynamic _pickImageFromGallery()
+  +Widget build()
+}
+
+"ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState" o-- "dart::io::File"
+"ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState" o-- "image_picker::image_picker.dart::ImagePicker"
+"ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState" o-- "flutter::src::painting::image_provider.dart::ImageProvider<Object>"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::edit_seller.dart::_EditSellerScreenState"
+
+class "ecommerce::sellerScreen::manage_order.dart::ManageOrderPage" {
+  +String sellerId
+  +State<ManageOrderPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::manage_order.dart::ManageOrderPage"
+
+class "ecommerce::sellerScreen::manage_order.dart::_ManageOrderPageState" {
+  -String? _selectedCourier
+  +void initState()
+  +void updateSelectedCourier()
+  +dynamic fetchSellerData()
+  -Stream<QuerySnapshot<Map<String, dynamic>>> _userOrdersStream()
+  -void _updateOrderStatus()
+  +String generateTrackingId()
+  +String getStatusText()
+  +dynamic requestStoragePermission()
+  +dynamic generateAndSavePDF()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::manage_order.dart::_ManageOrderPageState"
+
+class "ecommerce::sellerScreen::manage_product.dart::ProductListScreen" {
+  +State<ProductListScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::manage_product.dart::ProductListScreen"
+
+class "ecommerce::sellerScreen::manage_product.dart::_ProductListScreenState" {
+  -GlobalKey<RefreshIndicatorState> _refreshIndicatorKey
+  -String _searchText
+  +List<Map<String, dynamic>> products
+  -FilterOptions _filterOptions
+  -String? _selectedBrand
+  -String? _selectedCategory
+  -String? _selectedType
+  -String? _getCurrentSellerId()
+  +dynamic refreshProductList()
+  +List<QueryDocumentSnapshot<Map<String, dynamic>>> getFilteredAndSortedProducts()
+  -dynamic _showSearchDialog()
+  +Widget build()
+  -void _navigateToProductDetails()
+  -void _navigateToEditProductScreen()
+  -dynamic _deleteProduct()
+}
+
+"ecommerce::sellerScreen::manage_product.dart::_ProductListScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<RefreshIndicatorState>"
+"ecommerce::sellerScreen::manage_product.dart::_ProductListScreenState" o-- "ecommerce::widget::filter_dialog.dart::FilterOptions"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::manage_product.dart::_ProductListScreenState"
+
+class "ecommerce::sellerScreen::manage_product.dart::ProductGridItem" {
+  +String productName
+  +String imageUrl
+  +double price
+  +double discount
+  +double discountedPrice
+  +void Function() onTap
+  +void Function() onEdit
+  +void Function() onDelete
+  +Widget build()
+}
+
+"ecommerce::sellerScreen::manage_product.dart::ProductGridItem" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::sellerScreen::manage_product.dart::ProductGridItem"
+
+class "ecommerce::sellerScreen::manage_sales.dart::ManageSalesScreen" {
+  +String sellerId
+  +_ManageSalesScreenState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::manage_sales.dart::ManageSalesScreen"
+
+class "ecommerce::sellerScreen::manage_sales.dart::_ManageSalesScreenState" {
+  +Widget build()
+  +dynamic fetchProductSales()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::manage_sales.dart::_ManageSalesScreenState"
+
+class "ecommerce::sellerScreen::manage_sales.dart::ProductSalesEntry" {
+  +String productId
+  +String productName
+  +int quantity
+  +double itemTotalPrice
+}
+
+class "ecommerce::sellerScreen::product_details.dart::ProductDetailsScreen" {
+  +Map<String, dynamic> productData
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::sellerScreen::product_details.dart::ProductDetailsScreen"
+
+class "ecommerce::sellerScreen::seller_home.dart::SellerHomeScreen" {
+  +State<SellerHomeScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::seller_home.dart::SellerHomeScreen"
+
+class "ecommerce::sellerScreen::seller_home.dart::_SellerHomeScreenState" {
+  -User? _user
+  -String _sellerId
+  +void initState()
+  -void _fetchUserInfo()
+  +Widget build()
+}
+
+"ecommerce::sellerScreen::seller_home.dart::_SellerHomeScreenState" o-- "firebase_auth::firebase_auth.dart::User"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::seller_home.dart::_SellerHomeScreenState"
+
+class "ecommerce::sellerScreen::splash.dart::SplashScreen" {
+  +State<SplashScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::sellerScreen::splash.dart::SplashScreen"
+
+class "ecommerce::sellerScreen::splash.dart::_SplashScreenState" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::sellerScreen::splash.dart::_SplashScreenState"
+
+class "ecommerce::userScreen::account_security.dart::UserDetailsScreen" {
+  +String userId
+  +State<UserDetailsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::account_security.dart::UserDetailsScreen"
+
+class "ecommerce::userScreen::account_security.dart::_UserDetailsScreenState" {
+  -User? _user
+  +Widget build()
+}
+
+"ecommerce::userScreen::account_security.dart::_UserDetailsScreenState" o-- "ecommerce::models::user.dart::User"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::account_security.dart::_UserDetailsScreenState"
+
+class "ecommerce::userScreen::account_settings.dart::AccountSettingsScreen" {
+  +State<AccountSettingsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::account_settings.dart::AccountSettingsScreen"
+
+class "ecommerce::userScreen::account_settings.dart::_AccountSettingsScreenState" {
+  -String? _userId
+  +void initState()
+  -void _fetchUserId()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::account_settings.dart::_AccountSettingsScreenState"
+
+class "ecommerce::userScreen::change_password.dart::ChangePasswordScreen" {
+  +String userId
+  +State<ChangePasswordScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::change_password.dart::ChangePasswordScreen"
+
+class "ecommerce::userScreen::change_password.dart::_ChangePasswordScreenState" {
+  -TextEditingController _originalPasswordController
+  -TextEditingController _newPasswordController
+  -TextEditingController _confirmPasswordController
+  -FirebaseAuth _auth
+  -FirebaseFirestore _firestore
+  -String _statusMessage
+  -bool _isLoading
+  -bool _isOriginalPasswordVisible
+  -bool _isNewPasswordVisible
+  -bool _isConfirmPasswordVisible
+  -dynamic _onWillPop()
+  +Widget build()
+  -void _handleChangePassword()
+}
+
+"ecommerce::userScreen::change_password.dart::_ChangePasswordScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::userScreen::change_password.dart::_ChangePasswordScreenState" o-- "firebase_auth::firebase_auth.dart::FirebaseAuth"
+"ecommerce::userScreen::change_password.dart::_ChangePasswordScreenState" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::change_password.dart::_ChangePasswordScreenState"
+
+class "ecommerce::userScreen::delivery_page.dart::DeliveryPage" {
+  +int initialTabIndex
+  +State<DeliveryPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::delivery_page.dart::DeliveryPage"
+
+class "ecommerce::userScreen::delivery_page.dart::_DeliveryPageState" {
+  -TabController _tabController
+  +String userUid
+  +void initState()
+  +dynamic fetchUserUid()
+  +Widget build()
+  +void dispose()
+}
+
+"ecommerce::userScreen::delivery_page.dart::_DeliveryPageState" o-- "flutter::src::material::tab_controller.dart::TabController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::delivery_page.dart::_DeliveryPageState"
+"flutter::src::widgets::ticker_provider.dart::SingleTickerProviderStateMixin" <|-- "ecommerce::userScreen::delivery_page.dart::_DeliveryPageState"
+
+class "ecommerce::userScreen::delivery_status_page.dart::DeliveryStatusPage" {
+  +String title
+  +String userUid
+  +State<DeliveryStatusPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::delivery_status_page.dart::DeliveryStatusPage"
+
+class "ecommerce::userScreen::delivery_status_page.dart::_DeliveryStatusPageState" {
+  +List<Map<String, dynamic>> userOrdersData
+  +bool wantKeepAlive
+  +void initState()
+  +dynamic fetchUserOrders()
+  +dynamic fetchOrdersAndUserOrders()
+  +Widget build()
+  +int getStatusFromTitle()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::delivery_status_page.dart::_DeliveryStatusPageState"
+"flutter::src::widgets::automatic_keep_alive.dart::AutomaticKeepAliveClientMixin" <|-- "ecommerce::userScreen::delivery_status_page.dart::_DeliveryStatusPageState"
+
+class "ecommerce::userScreen::edit_user.dart::EditUserScreen" {
+  +String userId
+  +State<EditUserScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::edit_user.dart::EditUserScreen"
+
+class "ecommerce::userScreen::edit_user.dart::_EditUserScreenState" {
+  -TextEditingController _usernameController
+  -TextEditingController _icController
+  -TextEditingController _phoneController
+  -TextEditingController _addressController
+  -File? _profileImage
+  -ImagePicker _imagePicker
+  -ImageProvider<Object>? _avatarImage
+  +void initState()
+  -void _fetchUserData()
+  -void _updateUserData()
+  -dynamic _pickImageFromCamera()
+  -dynamic _pickImageFromGallery()
+  -dynamic _uploadProfileImage()
+  -dynamic _onWillPop()
+  +Widget build()
+}
+
+"ecommerce::userScreen::edit_user.dart::_EditUserScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::userScreen::edit_user.dart::_EditUserScreenState" o-- "dart::io::File"
+"ecommerce::userScreen::edit_user.dart::_EditUserScreenState" o-- "image_picker::image_picker.dart::ImagePicker"
+"ecommerce::userScreen::edit_user.dart::_EditUserScreenState" o-- "flutter::src::painting::image_provider.dart::ImageProvider<Object>"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::edit_user.dart::_EditUserScreenState"
+
+class "ecommerce::userScreen::order_detail_page.dart::OrderDetailsPage" {
+  +String orderId
+  +String userOrderId
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::userScreen::order_detail_page.dart::OrderDetailsPage"
+
+class "ecommerce::userScreen::payment_gateway.dart::PaymentGatewayScreen" {
+  +String orderId
+  +String userUid
+  +_PaymentGatewayScreenState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::payment_gateway.dart::PaymentGatewayScreen"
+
+class "ecommerce::userScreen::payment_gateway.dart::_PaymentGatewayScreenState" {
+  -TextEditingController _cardNumberController
+  -TextEditingController _expiryDateController
+  -TextEditingController _cvvController
+  -TextEditingController _expiryMonthController
+  -TextEditingController _expiryYearController
+  +dynamic updateSellerSalesStatistics()
+  +void dispose()
+  -dynamic _showExitConfirmationDialog()
+  -String? _validateCardNumber()
+  -String? _validateExpiryMonth()
+  -String? _validateExpiryYear()
+  -String? _validateCvv()
+  +Widget build()
+}
+
+"ecommerce::userScreen::payment_gateway.dart::_PaymentGatewayScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::payment_gateway.dart::_PaymentGatewayScreenState"
+
+class "ecommerce::userScreen::payment_gateway.dart::ExpiryDateInputFormatter" {
+  +TextEditingValue formatEditUpdate()
+}
+
+"flutter::src::services::text_formatter.dart::TextInputFormatter" <|-- "ecommerce::userScreen::payment_gateway.dart::ExpiryDateInputFormatter"
+
+class "ecommerce::userScreen::review_page.dart::ReviewPage" {
+  +String orderId
+  +String userOrderId
+  +State<ReviewPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::review_page.dart::ReviewPage"
+
+class "ecommerce::userScreen::review_page.dart::_ReviewPageState" {
+  +double productRating
+  +double sellerRating
+  +TextEditingController commentController
+  +String imageUrl
+  +String productName
+  +String productId
+  +String sellerId
+  -File? _pickedImage
+  +bool isSubmitting
+  +void initState()
+  +dynamic fetchReviewData()
+  +dynamic showBackConfirmationDialog()
+  -dynamic _pickImage()
+  +dynamic uploadReviewImage()
+  -dynamic _updateUserOrderIsRated()
+  +Widget build()
+}
+
+"ecommerce::userScreen::review_page.dart::_ReviewPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"ecommerce::userScreen::review_page.dart::_ReviewPageState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::review_page.dart::_ReviewPageState"
+
+class "ecommerce::userScreen::user_activity.dart::UserActivityScreen" {
+  +String userUid
+  +State<UserActivityScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::userScreen::user_activity.dart::UserActivityScreen"
+
+class "ecommerce::userScreen::user_activity.dart::_UserActivityScreenState" {
+  +dynamic fetchUserOrders()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::userScreen::user_activity.dart::_UserActivityScreenState"
+
+class "ecommerce::userScreen::view_all_review.dart::ViewAllReviewsPage" {
+  +String productId
+  -Widget _buildRatingStars()
+  -Stream<QuerySnapshot<Map<String, dynamic>>> _fetchProductReviewsStream()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::userScreen::view_all_review.dart::ViewAllReviewsPage"
+
+class "ecommerce::widget::add_to_cart_dialog.dart::AddToCartDialog" {
+  +int maxQuantity
+  +String productId
+  +String userId
+  +State<AddToCartDialog> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::add_to_cart_dialog.dart::AddToCartDialog"
+
+class "ecommerce::widget::add_to_cart_dialog.dart::_AddToCartDialogState" {
+  +int quantity
+  +bool isAddingToCart
+  -FocusNode _quantityFocusNode
+  -TextEditingController _quantityController
+  +void initState()
+  +void dispose()
+  -void _onQuantityChanged()
+  +Widget build()
+  -dynamic _addToCart()
+}
+
+"ecommerce::widget::add_to_cart_dialog.dart::_AddToCartDialogState" o-- "flutter::src::widgets::focus_manager.dart::FocusNode"
+"ecommerce::widget::add_to_cart_dialog.dart::_AddToCartDialogState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::add_to_cart_dialog.dart::_AddToCartDialogState"
+
+class "ecommerce::widget::brand_drop_down.dart::BrandDropdown" {
+  +String? selectedBrand
+  +void Function(String?) onBrandChanged
+  +State<BrandDropdown> createState()
+}
+
+"ecommerce::widget::brand_drop_down.dart::BrandDropdown" o-- "flutter::src::foundation::basic_types.dart::void Function(String)"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::brand_drop_down.dart::BrandDropdown"
+
+class "ecommerce::widget::brand_drop_down.dart::_BrandDropdownState" {
+  -String? _selectedBrand
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::brand_drop_down.dart::_BrandDropdownState"
+
+class "ecommerce::widget::button_widget.dart::ButtonWidget" {
+  +IconData icon
+  +IconData trailingIcon
+  +String label
+  +void Function() onPressed
+  +Widget build()
+}
+
+"ecommerce::widget::button_widget.dart::ButtonWidget" o-- "flutter::src::widgets::icon_data.dart::IconData"
+"ecommerce::widget::button_widget.dart::ButtonWidget" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::widget::button_widget.dart::ButtonWidget"
+
+class "ecommerce::widget::category_drop_down.dart::CategoryDropdown" {
+  +String? selectedCategory
+  +void Function(String?) onCategoryChanged
+  +State<CategoryDropdown> createState()
+}
+
+"ecommerce::widget::category_drop_down.dart::CategoryDropdown" o-- "flutter::src::foundation::basic_types.dart::void Function(String)"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::category_drop_down.dart::CategoryDropdown"
+
+class "ecommerce::widget::category_drop_down.dart::_CategoryDropdownState" {
+  -String? _selectedCategory
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::category_drop_down.dart::_CategoryDropdownState"
+
+class "ecommerce::widget::courier_drop_down.dart::CourierDropdown" {
+  +String? selectedCourier
+  +void Function(String?) onCourierChanged
+  +State<CourierDropdown> createState()
+}
+
+"ecommerce::widget::courier_drop_down.dart::CourierDropdown" o-- "flutter::src::foundation::basic_types.dart::void Function(String)"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::courier_drop_down.dart::CourierDropdown"
+
+class "ecommerce::widget::courier_drop_down.dart::_CourierDropdownState" {
+  -String? _selectedCourier
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::courier_drop_down.dart::_CourierDropdownState"
+
+class "ecommerce::widget::data_fetcher.dart::FirestoreDataFetcher" {
+  +String userId
+  +State<FirestoreDataFetcher> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::data_fetcher.dart::FirestoreDataFetcher"
+
+class "ecommerce::widget::data_fetcher.dart::_FirestoreDataFetcherState" {
+  -User? _user
+  +Widget build()
+}
+
+"ecommerce::widget::data_fetcher.dart::_FirestoreDataFetcherState" o-- "ecommerce::models::user.dart::User"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::data_fetcher.dart::_FirestoreDataFetcherState"
+
+class "ecommerce::widget::delivery_button.dart::DeliveryButton" {
+  +IconData icon
+  +String label
+  +int count
+  +void Function() onPressed
+  +Widget build()
+}
+
+"ecommerce::widget::delivery_button.dart::DeliveryButton" o-- "flutter::src::widgets::icon_data.dart::IconData"
+"ecommerce::widget::delivery_button.dart::DeliveryButton" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "ecommerce::widget::delivery_button.dart::DeliveryButton"
+
+class "ecommerce::widget::filter_dialog.dart::FilterDialog" {
+  +FilterOptions initialFilterOptions
+  +String? selectedBrand
+  +String? selectedCategory
+  +String? selectedType
+  +void Function(FilterOptions, String?, String?, String?) onApply
+  +void Function() onClear
+  +State<FilterDialog> createState()
+}
+
+"ecommerce::widget::filter_dialog.dart::FilterDialog" o-- "ecommerce::widget::filter_dialog.dart::FilterOptions"
+"ecommerce::widget::filter_dialog.dart::FilterDialog" o-- "null::void Function(FilterOptions, String, String, String)"
+"ecommerce::widget::filter_dialog.dart::FilterDialog" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::filter_dialog.dart::FilterDialog"
+
+class "ecommerce::widget::filter_dialog.dart::_FilterDialogState" {
+  +FilterOptions filterOptions
+  +TextEditingController minPriceController
+  +TextEditingController maxPriceController
+  +void initState()
+  +Widget build()
+}
+
+"ecommerce::widget::filter_dialog.dart::_FilterDialogState" o-- "ecommerce::widget::filter_dialog.dart::FilterOptions"
+"ecommerce::widget::filter_dialog.dart::_FilterDialogState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::filter_dialog.dart::_FilterDialogState"
+
+class "ecommerce::widget::filter_dialog.dart::FilterOptions" {
+  +bool sortAscending
+  +bool sortDescending
+  +bool sortPriceAscending
+  +bool sortPriceDescending
+  +double? minPrice
+  +double? maxPrice
+  +String? selectedBrand
+  +String? selectedCategory
+  +String? selectedType
+}
+
+class "ecommerce::widget::filter_dialog_category.dart::FilterDialog" {
+  +FilterOptions initialFilterOptions
+  +String? selectedBrand
+  +String? selectedType
+  +void Function(FilterOptions, String?, String?) onApply
+  +void Function() onClear
+  +State<FilterDialog> createState()
+}
+
+"ecommerce::widget::filter_dialog_category.dart::FilterDialog" o-- "ecommerce::widget::filter_dialog_category.dart::FilterOptions"
+"ecommerce::widget::filter_dialog_category.dart::FilterDialog" o-- "null::void Function(FilterOptions, String, String)"
+"ecommerce::widget::filter_dialog_category.dart::FilterDialog" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::filter_dialog_category.dart::FilterDialog"
+
+class "ecommerce::widget::filter_dialog_category.dart::_FilterDialogState" {
+  +FilterOptions filterOptions
+  +TextEditingController minPriceController
+  +TextEditingController maxPriceController
+  +void initState()
+  +Widget build()
+}
+
+"ecommerce::widget::filter_dialog_category.dart::_FilterDialogState" o-- "ecommerce::widget::filter_dialog_category.dart::FilterOptions"
+"ecommerce::widget::filter_dialog_category.dart::_FilterDialogState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::filter_dialog_category.dart::_FilterDialogState"
+
+class "ecommerce::widget::filter_dialog_category.dart::FilterOptions" {
+  +bool sortAscending
+  +bool sortDescending
+  +bool sortPriceAscending
+  +bool sortPriceDescending
+  +double? minPrice
+  +double? maxPrice
+  +String? selectedBrand
+  +String? selectedType
+}
+
+class "ecommerce::widget::type_drop_down.dart::TypeDropdown" {
+  +String? selectedType
+  +void Function(String?) onTypeChanged
+  +State<TypeDropdown> createState()
+}
+
+"ecommerce::widget::type_drop_down.dart::TypeDropdown" o-- "flutter::src::foundation::basic_types.dart::void Function(String)"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::type_drop_down.dart::TypeDropdown"
+
+class "ecommerce::widget::type_drop_down.dart::_TypeDropdownState" {
+  -String? _selectedType
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::type_drop_down.dart::_TypeDropdownState"
+
+class "ecommerce::widget::user_image_picker.dart::UserImagePicker" {
+  +void Function(File) onPickImage
+  +ImageProvider<Object>? initialImage
+  +State<UserImagePicker> createState()
+}
+
+"ecommerce::widget::user_image_picker.dart::UserImagePicker" o-- "null::void Function(File)"
+"ecommerce::widget::user_image_picker.dart::UserImagePicker" o-- "flutter::src::painting::image_provider.dart::ImageProvider<Object>"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "ecommerce::widget::user_image_picker.dart::UserImagePicker"
+
+class "ecommerce::widget::user_image_picker.dart::_UserImagePickerState" {
+  -File? _pickedImageFile
+  +void initState()
+  -void _pickImage()
+  +Widget build()
+}
+
+"ecommerce::widget::user_image_picker.dart::_UserImagePickerState" o-- "dart::io::File"
+"flutter::src::widgets::framework.dart::State" <|-- "ecommerce::widget::user_image_picker.dart::_UserImagePickerState"
+
+
+@enduml

@@ -178,82 +178,82 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 thickness: 2.0, // Set the line width
                 color: Colors.black, // Set the line color
               ), // Add spacing between the buttons
-              Row(
-                children: [
-                  ButtonWidget(
-                    icon: Icons.store,
-                    trailingIcon: Icons.arrow_forward_ios,
-                    label: 'Add Brand',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const BrandScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ), // Add spacing between the buttons
-              Row(
-                children: [
-                  ButtonWidget(
-                    icon: Icons.store,
-                    trailingIcon: Icons.arrow_forward_ios,
-                    label: 'Add Category',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const CategoryScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ), // Add spacing between the buttons
-              Row(
-                children: [
-                  ButtonWidget(
-                    icon: Icons.store,
-                    trailingIcon: Icons.arrow_forward_ios,
-                    label: 'Add Type',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const TypeScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ),
-              Row(
-                children: [
-                  ButtonWidget(
-                    icon: Icons.fire_truck,
-                    trailingIcon: Icons.arrow_forward_ios,
-                    label: 'Add Courier',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const CourierScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     ButtonWidget(
+              //       icon: Icons.store,
+              //       trailingIcon: Icons.arrow_forward_ios,
+              //       label: 'Add Brand',
+              //       onPressed: () {
+              //         Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => const BrandScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // const Divider(
+              //   thickness: 2.0, // Set the line width
+              //   color: Colors.black, // Set the line color
+              // ), // Add spacing between the buttons
+              // Row(
+              //   children: [
+              //     ButtonWidget(
+              //       icon: Icons.store,
+              //       trailingIcon: Icons.arrow_forward_ios,
+              //       label: 'Add Category',
+              //       onPressed: () {
+              //         Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => const CategoryScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // const Divider(
+              //   thickness: 2.0, // Set the line width
+              //   color: Colors.black, // Set the line color
+              // ), // Add spacing between the buttons
+              // Row(
+              //   children: [
+              //     ButtonWidget(
+              //       icon: Icons.store,
+              //       trailingIcon: Icons.arrow_forward_ios,
+              //       label: 'Add Type',
+              //       onPressed: () {
+              //         Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => const TypeScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // const Divider(
+              //   thickness: 2.0, // Set the line width
+              //   color: Colors.black, // Set the line color
+              // ),
+              // Row(
+              //   children: [
+              //     ButtonWidget(
+              //       icon: Icons.fire_truck,
+              //       trailingIcon: Icons.arrow_forward_ios,
+              //       label: 'Add Courier',
+              //       onPressed: () {
+              //         Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => const CourierScreen()),
+              //         );
+              //       },
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

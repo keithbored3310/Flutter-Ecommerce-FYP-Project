@@ -38,7 +38,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void _submit() async {
     final isValid = _form.currentState!.validate();
 
-    if (!isValid || !_isLogin && _selectedImage == null) {
+    if (!isValid || (!_isLogin && _selectedImage == null)) {
       // Show error message
       return;
     }
@@ -96,6 +96,27 @@ class _AuthScreenState extends State<AuthScreen> {
             return AlertDialog(
               title: const Text('Registration Failed'),
               content: const Text('The email is already registered.'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else if (error.code == 'wrong-password' ||
+          error.code == 'user-not-found') {
+        // Wrong email or password
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Login Failed'),
+              content:
+                  const Text('Invalid email or password. Please try again.'),
               actions: <Widget>[
                 TextButton(
                   child: const Text('OK'),
