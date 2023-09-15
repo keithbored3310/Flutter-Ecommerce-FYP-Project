@@ -1,3 +1,4 @@
+import 'package:ecommerce/screens/tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,30 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
     if (user != null) {
       currentUserUid = user.uid;
     }
+    _markAllChatsAsRead(); // Mark all chats as read when the screen is loaded
+  }
+
+  Future<void> markChatAsRead(String chatId) async {
+    // Update the chat document in Firestore to mark it as read
+    await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
+      'isRead': true, // Add an 'isRead' field to your chat document
+    });
+  }
+
+  Future<void> _markAllChatsAsRead() async {
+    final chatDocs = await FirebaseFirestore.instance
+        .collection('chats')
+        .where('sender', isEqualTo: currentUserUid)
+        .get();
+
+    for (final chatDoc in chatDocs.docs) {
+      await chatDoc.reference.update({
+        'isRead': true, // Mark each chat as read
+      });
+    }
+
+    // Update chat status count in TabsScreen using the static property
+    TabsScreen.chatStatusCount = 0; // Set the count to 0
   }
 
   @override
@@ -51,6 +76,8 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
               final sellerShopName = chatData['sellerShopName'];
               final lastMessage = chatData['lastMessage'];
               final sellerImageUrl = chatData['sellerImageUrl'];
+              final isRead = chatData['isRead'] ??
+                  false; // Add 'isRead' field to chat document
 
               return Dismissible(
                 key: Key(chatId), // Unique key for each chat item
@@ -76,7 +103,11 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
                       : const CircleAvatar(child: Icon(Icons.store)),
                   title: Text(sellerShopName ?? ''),
                   subtitle: Text(lastMessage ?? ''),
-                  onTap: () {
+                  onTap: () async {
+                    // Mark the chat as read when the user taps on it
+                    await markChatAsRead(chatId);
+
+                    // Navigate to the chat screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -86,6 +117,8 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
                       ),
                     );
                   },
+                  // Use a different color for unread chats
+                  tileColor: isRead ? null : Colors.grey[200],
                 ),
               );
             },

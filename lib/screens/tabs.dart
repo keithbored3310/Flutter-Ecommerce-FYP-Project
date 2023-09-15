@@ -11,7 +11,7 @@ import 'package:ecommerce/screens/cart_screen.dart';
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
-
+  static int chatStatusCount = 0;
   @override
   State<TabsScreen> createState() {
     return _TabsScreenState();
@@ -61,6 +61,21 @@ class _TabsScreenState extends State<TabsScreen> {
         });
       });
     }
+  }
+
+  static void updateChatStatusCountFromUserChatList(
+      BuildContext context, int count) {
+    final _TabsScreenState? state =
+        context.findAncestorStateOfType<_TabsScreenState>();
+    if (state != null) {
+      state.updateChatStatusCount(count);
+    }
+  }
+
+  void updateChatStatusCount(int count) {
+    setState(() {
+      _chatStatusCount = count;
+    });
   }
 
   @override

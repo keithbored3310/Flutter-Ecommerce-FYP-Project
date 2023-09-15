@@ -89,8 +89,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   Future<Map<String, int>> fetchOrderCounts(String userId) async {
     final ordersSnapshot = await FirebaseFirestore.instance
         .collection('orders')
-        .where('userId',
-            isEqualTo: userId) // Use where clause to filter by userId
+        .where('userId', isEqualTo: userId)
         .get();
 
     final orderCounts = {
@@ -107,9 +106,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           .doc(orderId)
           .collection('userOrders')
           .get();
+
       for (final doc in userOrdersSnapshot.docs) {
         final orderData = doc.data() as Map<String, dynamic>;
         final orderStatus = orderData['status'] as int?;
+        final isRated = orderData['isRated'] ?? false;
 
         if (orderStatus != null) {
           if (orderStatus == 1) {
@@ -118,7 +119,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             orderCounts['toShip'] = (orderCounts['toShip'] ?? 0) + 1;
           } else if (orderStatus == 3) {
             orderCounts['toReceive'] = (orderCounts['toReceive'] ?? 0) + 1;
-          } else if (orderStatus == 4) {
+          }
+
+          if (orderStatus == 4 && !isRated) {
             orderCounts['toRate'] = (orderCounts['toRate'] ?? 0) + 1;
           }
         }

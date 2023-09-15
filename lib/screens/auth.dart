@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/screens/reset_password_screen.dart';
 import 'package:ecommerce/widget/user_image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,26 @@ class _AuthScreenState extends State<AuthScreen> {
     final isValid = _form.currentState!.validate();
 
     if (!isValid || (!_isLogin && _selectedImage == null)) {
-      // Show error message
+      // Show an error message in a dialog if the image is mandatory
+      if (!_isLogin && _selectedImage == null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Profile Picture Required'),
+              content: Text('Please select a profile picture.'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
       return;
     }
 
@@ -345,6 +365,18 @@ class _AuthScreenState extends State<AuthScreen> {
                                   ? 'Create an account'
                                   : 'I already have an account.'),
                             ),
+                          if (!_isAuthenticating)
+                            if (_isLogin)
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (ctx) => ResetPasswordScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Text('Forgot Password?'),
+                              ),
                         ],
                       ),
                     ),
