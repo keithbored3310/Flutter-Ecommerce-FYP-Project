@@ -1,15 +1,11 @@
-import 'package:ecommerce/adminScreen/courier_screen.dart';
 import 'package:ecommerce/chatsScreen/seller_chat_list.dart';
 import 'package:ecommerce/sellerScreen/manage_order.dart';
 import 'package:ecommerce/sellerScreen/manage_sales.dart';
-import 'package:ecommerce/sellerScreen/seller_pdf_x.dart';
+import 'package:ecommerce/sellerScreen/product_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/sellerScreen/edit_seller.dart';
-import 'package:ecommerce/adminScreen/brand_screen.dart';
-import 'package:ecommerce/adminScreen/category_screen.dart';
-import 'package:ecommerce/adminScreen/type_screen.dart';
 import 'package:ecommerce/sellerScreen/manage_product.dart';
 import 'package:ecommerce/widget/button_widget.dart';
 
@@ -21,13 +17,12 @@ class SellerHomeScreen extends StatefulWidget {
 }
 
 class _SellerHomeScreenState extends State<SellerHomeScreen> {
-  late User? _user; // Declare a User object
-  String _sellerId = ''; // Initialize sellerId as an empty string
+  late User? _user;
+  String _sellerId = '';
 
   @override
   void initState() {
     super.initState();
-    // Fetch user and seller information
     _fetchUserInfo();
   }
 
@@ -35,11 +30,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     try {
       FirebaseAuth _auth = FirebaseAuth.instance;
       setState(() {
-        _user = _auth.currentUser; // Get the current user
+        _user = _auth.currentUser;
       });
 
       if (_user != null) {
-        // Use the user's UID to fetch sellerId
         DocumentSnapshot sellerSnapshot = await FirebaseFirestore.instance
             .collection('sellers')
             .doc(_user!.uid)
@@ -47,11 +41,11 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
 
         setState(() {
           _sellerId = sellerSnapshot.id;
-          print('sellerId: $_sellerId');
+          // print('sellerId: $_sellerId');
         });
       }
     } catch (e) {
-      print('Error fetching user info: $e');
+      // print('Error fetching user info: $e');
     }
   }
 
@@ -70,7 +64,6 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               Row(
                 children: [
                   ButtonWidget(
-                    // Set the desired height directly in ButtonWidget
                     icon: Icons.shopping_bag,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Order',
@@ -87,13 +80,12 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
               const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ), // Add spacing between the buttons
+                thickness: 2.0,
+                color: Colors.black,
+              ),
               Row(
                 children: [
                   ButtonWidget(
-                    // Set the desired height directly in ButtonWidget
                     icon: Icons.people,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Sellers Information',
@@ -110,13 +102,12 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
               const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ), // Add spacing between the buttons
+                thickness: 2.0,
+                color: Colors.black,
+              ),
               Row(
                 children: [
                   ButtonWidget(
-                    // Set the desired height directly in ButtonWidget
                     icon: Icons.chat,
                     trailingIcon: Icons.arrow_forward_ios,
                     label: 'Manage Chats',
@@ -155,8 +146,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
               const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
+                thickness: 2.0,
+                color: Colors.black,
               ),
               Row(
                 children: [
@@ -175,85 +166,30 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
               const Divider(
-                thickness: 2.0, // Set the line width
-                color: Colors.black, // Set the line color
-              ), // Add spacing between the buttons
-              // Row(
-              //   children: [
-              //     ButtonWidget(
-              //       icon: Icons.store,
-              //       trailingIcon: Icons.arrow_forward_ios,
-              //       label: 'Add Brand',
-              //       onPressed: () {
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => const BrandScreen()),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
-              // const Divider(
-              //   thickness: 2.0, // Set the line width
-              //   color: Colors.black, // Set the line color
-              // ), // Add spacing between the buttons
-              // Row(
-              //   children: [
-              //     ButtonWidget(
-              //       icon: Icons.store,
-              //       trailingIcon: Icons.arrow_forward_ios,
-              //       label: 'Add Category',
-              //       onPressed: () {
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => const CategoryScreen()),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
-              // const Divider(
-              //   thickness: 2.0, // Set the line width
-              //   color: Colors.black, // Set the line color
-              // ), // Add spacing between the buttons
-              // Row(
-              //   children: [
-              //     ButtonWidget(
-              //       icon: Icons.store,
-              //       trailingIcon: Icons.arrow_forward_ios,
-              //       label: 'Add Type',
-              //       onPressed: () {
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => const TypeScreen()),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
-              // const Divider(
-              //   thickness: 2.0, // Set the line width
-              //   color: Colors.black, // Set the line color
-              // ),
-              // Row(
-              //   children: [
-              //     ButtonWidget(
-              //       icon: Icons.fire_truck,
-              //       trailingIcon: Icons.arrow_forward_ios,
-              //       label: 'Add Courier',
-              //       onPressed: () {
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => const CourierScreen()),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
+                thickness: 2.0,
+                color: Colors.black,
+              ),
+              Row(
+                children: [
+                  ButtonWidget(
+                    icon: Icons.store,
+                    trailingIcon: Icons.arrow_forward_ios,
+                    label: 'View Reviews',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ProductListPage(sellerId: _sellerId)),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const Divider(
+                thickness: 2.0,
+                color: Colors.black,
+              ),
             ],
           ),
         ),

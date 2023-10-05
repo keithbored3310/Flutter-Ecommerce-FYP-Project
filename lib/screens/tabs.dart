@@ -1,10 +1,8 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/chatsScreen/user_chat_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ecommerce/screens/account_details.dart';
 import 'package:ecommerce/screens/homepage.dart';
 import 'package:ecommerce/screens/cart_screen.dart';
@@ -29,7 +27,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   void initState() {
     super.initState();
-    _listenToCartItems(); // Start listening to cart item changes
+    _listenToCartItems();
     _listenToChatStatus();
   }
 
@@ -42,7 +40,7 @@ class _TabsScreenState extends State<TabsScreen> {
           .snapshots()
           .listen((snapshot) {
         setState(() {
-          _cartItemCount = snapshot.docs.length; // Update cart item count
+          _cartItemCount = snapshot.docs.length;
         });
       });
     }
@@ -54,21 +52,13 @@ class _TabsScreenState extends State<TabsScreen> {
       FirebaseFirestore.instance
           .collection('chats')
           .where('sender', isEqualTo: currentUser.uid)
+          .where('unreadMessage', isEqualTo: 1) // Only count unread messages
           .snapshots()
           .listen((snapshot) {
         setState(() {
-          _chatStatusCount = snapshot.docs.length; // Update chat status count
+          _chatStatusCount = snapshot.docs.length;
         });
       });
-    }
-  }
-
-  static void updateChatStatusCountFromUserChatList(
-      BuildContext context, int count) {
-    final _TabsScreenState? state =
-        context.findAncestorStateOfType<_TabsScreenState>();
-    if (state != null) {
-      state.updateChatStatusCount(count);
     }
   }
 
@@ -80,7 +70,7 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   void dispose() {
-    _cartItemsSubscription?.cancel(); // Cancel the stream subscription
+    _cartItemsSubscription?.cancel();
     super.dispose();
   }
 
@@ -107,8 +97,7 @@ class _TabsScreenState extends State<TabsScreen> {
         child: AppBar(
           title: Text(activePageTitle),
           toolbarHeight: 56.0,
-          backgroundColor:
-              const Color.fromRGBO(231, 240, 242, 1), // Set initial color
+          backgroundColor: const Color.fromRGBO(231, 240, 242, 1),
           flexibleSpace: const FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
           ),
@@ -162,8 +151,8 @@ class _TabsScreenState extends State<TabsScreen> {
                   IconButton(
                     icon: Stack(
                       children: [
-                        const Icon(Icons.message), // Add the chat icon
-                        if (_chatStatusCount > 0) // Display chat status count
+                        const Icon(Icons.message),
+                        if (_chatStatusCount > 0)
                           Positioned(
                             top: 0,
                             right: 0,
@@ -240,8 +229,8 @@ class _TabsScreenState extends State<TabsScreen> {
                   IconButton(
                     icon: Stack(
                       children: [
-                        const Icon(Icons.message), // Add the chat icon
-                        if (_chatStatusCount > 0) // Display chat status count
+                        const Icon(Icons.message),
+                        if (_chatStatusCount > 0)
                           Positioned(
                             top: 0,
                             right: 0,
@@ -283,8 +272,7 @@ class _TabsScreenState extends State<TabsScreen> {
           const SliverAppBar(
             pinned: true,
             toolbarHeight: 0,
-            backgroundColor:
-                Color.fromRGBO(231, 240, 242, 1), // Set initial color
+            backgroundColor: Color.fromRGBO(231, 240, 242, 1),
           ),
           SliverFillRemaining(
             child: activePage,

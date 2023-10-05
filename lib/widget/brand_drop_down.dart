@@ -16,12 +16,10 @@ class BrandDropdown extends StatefulWidget {
 }
 
 class _BrandDropdownState extends State<BrandDropdown> {
-  String? _selectedBrand; // Nullable selected brand
-
+  String? _selectedBrand;
   @override
   void initState() {
     super.initState();
-    // Initialize the selected brand with the provided value from the constructor
     _selectedBrand = widget.selectedBrand;
   }
 
@@ -32,7 +30,6 @@ class _BrandDropdownState extends State<BrandDropdown> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final brands = snapshot.data!.docs;
-          // Build the drop-down list using the data from Firestore
           return DropdownButtonFormField<String>(
             value: _selectedBrand,
             onChanged: (value) {
@@ -43,8 +40,8 @@ class _BrandDropdownState extends State<BrandDropdown> {
             },
             items: [
               const DropdownMenuItem<String>(
-                value: null, // Set 'Other' as the default value
-                child: Text('Select Brand'), // Default text
+                value: null,
+                child: Text('Select Brand'),
               ),
               ...brands
                   .map((brand) {
@@ -55,7 +52,7 @@ class _BrandDropdownState extends State<BrandDropdown> {
                         child: Text(brandName),
                       );
                     } else {
-                      return null; // Return null for null brandName
+                      return null;
                     }
                   })
                   .whereType<DropdownMenuItem<String>>()

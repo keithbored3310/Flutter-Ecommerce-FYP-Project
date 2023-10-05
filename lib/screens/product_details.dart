@@ -41,6 +41,23 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     _fetchUserInfo();
   }
 
+  void _showEnlargedImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _updateCartItemCount() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
@@ -254,14 +271,12 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(16.0), // Adjust the radius as needed
+            borderRadius: BorderRadius.circular(16.0),
           ),
           title: const Text('Add to Cart'),
           content: SingleChildScrollView(
-            // Wrap AddToCartDialog with SingleChildScrollView
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.8, // Limit the width
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
               child: AddToCartDialog(
                 maxQuantity: maxQuantity,
                 productId: widget.productId,
@@ -289,7 +304,6 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
 
     return GestureDetector(
       onTap: () {
-        // Redirect to seller's homepage
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -350,8 +364,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                           ),
                         ),
                         FutureBuilder<double>(
-                          future: fetchSellerAverageRating(
-                              sellerId), // Use your function here
+                          future: fetchSellerAverageRating(sellerId),
                           builder: (context, ratingSnapshot) {
                             if (ratingSnapshot.connectionState ==
                                 ConnectionState.waiting) {
@@ -378,7 +391,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
     return FirebaseFirestore.instance
         .collection('reviews')
         .where('productId', isEqualTo: widget.productId)
-        .where('status', isEqualTo: 4) // Filter by status equal to 4
+        .where('status', isEqualTo: 4)
         .limit(10)
         .orderBy('timestamp', descending: true)
         .snapshots();
@@ -414,11 +427,10 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                   );
                 },
               ),
-              if (_cartItemCount >
-                  0) // Show badge only if there are items in the cart
+              if (_cartItemCount > 0)
                 Positioned(
-                  top: 8, // Adjust the position as needed
-                  right: 8, // Adjust the position as needed
+                  top: 8,
+                  right: 8,
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
@@ -447,10 +459,15 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.network(
-              widget.productData['imageUrl'],
-              height: 300,
-              fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () {
+                _showEnlargedImage(context, widget.productData['imageUrl']);
+              },
+              child: Image.network(
+                widget.productData['imageUrl'],
+                height: 300,
+                fit: BoxFit.cover,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -532,7 +549,6 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
 
                       final averageRating = snapshot.data ?? 0.0;
                       return Row(
-                        // Wrap _buildRatingStars in a Row
                         children: [
                           _buildRatingStars(averageRating),
                         ],
@@ -570,7 +586,6 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                   onNotification: (notification) {
                     if (notification is OverscrollNotification &&
                         notification.overscroll < 0) {
-                      // Scrolling up, allow the gesture to propagate
                       return true;
                     }
                     return false;
@@ -623,8 +638,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                                         height: 100,
                                         fit: BoxFit.cover,
                                       ),
-                                    if (reviewData['comment'] !=
-                                        null) // Check if comment is not null
+                                    if (reviewData['comment'] != null)
                                       Text(reviewData['comment']),
                                     Row(
                                       mainAxisAlignment:
@@ -656,7 +670,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
         ),
       ),
       bottomNavigationBar: SizedBox(
-        height: 92, // Adjust the height as needed
+        height: 92,
         child: BottomAppBar(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -668,7 +682,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                     icon: const Icon(Icons.chat),
                     onPressed: () async {
                       if (_sellerInfo.isEmpty || _userInfo.isEmpty) {
-                        return; // Don't proceed if information is not available
+                        return;
                       }
 
                       final currentUserUid =
@@ -682,15 +696,12 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
 
                         final sender = currentUserUid;
                         final receiver = sellerId;
-
-                        // Check if the chat exists
                         final chatSnapshot = await FirebaseFirestore.instance
                             .collection('chats')
                             .doc(chatId)
                             .get();
 
                         if (chatSnapshot.exists) {
-                          // Chat exists, navigate to the chat screen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -705,6 +716,7 @@ class _ProductDetailsUserScreenState extends State<ProductDetailsUserScreen> {
                               .set({
                             'sender': sender,
                             'receiver': receiver,
+                            'unreadMessage': 0,
                             'lastMessage': '',
                             'timestamp': FieldValue.serverTimestamp(),
                             'sellerShopName': _sellerInfo['shopName'],

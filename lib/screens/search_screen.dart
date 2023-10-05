@@ -16,7 +16,6 @@ class _SearchScreenState extends State<SearchScreen> {
   List<String> searchRecords = [];
 
   Future<void> _refreshData() async {
-    // You can put your data loading logic here
     _loadSearchRecords();
   }
 
@@ -113,7 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
-                hintText: 'Enter search query',
+                hintText: 'Enter search keywords',
                 suffixIcon: ElevatedButton(
                   onPressed: _performSearch,
                   child: const Text('Search'),

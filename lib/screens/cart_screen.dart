@@ -72,12 +72,11 @@ class _CartScreenState extends State<CartScreen> {
     DocumentSnapshot cartItemSnapshot =
         await FirebaseFirestore.instance.collection('carts').doc(itemId).get();
 
-    String productId =
-        cartItemSnapshot['productId']; // Get the productId from the cart item
+    String productId = cartItemSnapshot['productId'];
 
     DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
         .collection('products')
-        .doc(productId) // Use the productId to fetch the product document
+        .doc(productId)
         .get();
 
     if (productSnapshot.exists) {
@@ -96,7 +95,7 @@ class _CartScreenState extends State<CartScreen> {
         FirebaseFirestore.instance.collection('carts').doc(itemId).delete();
       }
     } else {
-      print('Product document does not exist.');
+      // print('Product document does not exist.');
     }
   }
 
@@ -114,20 +113,15 @@ class _CartScreenState extends State<CartScreen> {
       setState(() {
         productData = Map<String, dynamic>.from(productDataMap);
         maxQuantity = productSnapshot['quantity'] ?? 0;
-
-        // Set the initial value for the quantity controller
         _quantityController.text = cartQuantity.toString();
       });
     } catch (e) {
-      // Handle error fetching data
-      print('Error fetching product data: $e');
+      // print('Error fetching product data: $e');
     }
   }
 
-  // Define a function to show the checkout dialog
   void showCheckoutDialog() async {
     try {
-      // Fetch the selected items from Firestore
       final List<DocumentSnapshot> selectedItemsDocs =
           await fetchSelectedItemsFromFirestore(selectedItems);
 
@@ -139,7 +133,7 @@ class _CartScreenState extends State<CartScreen> {
         ),
       );
     } catch (e) {
-      print('Error fetching selected items: $e');
+      // print('Error fetching selected items: $e');
     }
   }
 
@@ -153,70 +147,6 @@ class _CartScreenState extends State<CartScreen> {
 
     return selectedItemsDocs;
   }
-
-  // void proceedToCheckout(QuerySnapshot<Object?> snapshot) async {
-  //   double totalOrderPrice = calculateTotalPrice(snapshot.docs);
-
-  //   // Create order document in the orders collection
-  //   DocumentReference orderRef =
-  //       await FirebaseFirestore.instance.collection('orders').add({
-  //     'userId': userUid,
-  //     'totalOrderPrice': totalOrderPrice, // Added totalOrderPrice
-  //     'status': 1, // Status for pending
-  //     'timestamp': FieldValue.serverTimestamp(),
-  //   });
-  //   String orderId = orderRef.id;
-  //   // Iterate through selected items
-  //   for (var itemId in selectedItems) {
-  //     DocumentSnapshot cartItemSnapshot = await FirebaseFirestore.instance
-  //         .collection('carts')
-  //         .doc(itemId)
-  //         .get();
-
-  //     // Get product details from the cart item
-  //     String productId = cartItemSnapshot['productId'];
-  //     int cartQuantity = cartItemSnapshot['quantity'];
-  //     double itemDiscountedPrice = cartItemSnapshot['discountedPrice'];
-  //     String imageUrl = cartItemSnapshot['imageUrl'];
-  //     String productName = cartItemSnapshot['name'];
-  //     String sellerId = cartItemSnapshot['sellerId'];
-
-  //     // Calculate order details
-  //     double itemTotalPrice = itemDiscountedPrice * cartQuantity;
-
-  //     // Create order document in the userOrders subcollection
-  //     await orderRef.collection('userOrders').add({
-  //       'orderId': orderId,
-  //       'productId': productId,
-  //       'quantity': cartQuantity,
-  //       'itemTotalPrice': itemTotalPrice,
-  //       'imageUrl': imageUrl,
-  //       'productName': productName,
-  //       'sellerId': sellerId,
-  //       'userId': userUid,
-  //       'status': 1, // Status for pending
-  //       'timestamp': FieldValue.serverTimestamp(),
-  //     });
-
-  //     // Remove item from cart
-  //     await FirebaseFirestore.instance.collection('carts').doc(itemId).delete();
-  //   }
-
-  //   // Clear selected items
-  //   setState(() {
-  //     selectedItems.clear();
-  //   });
-
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => OrderConfirmationScreen(
-  //         orderId: orderRef.id,
-  //         userUid: userUid,
-  //       ),
-  //     ),
-  //   );
-  // }
 
   @override
   void dispose() {
@@ -249,19 +179,15 @@ class _CartScreenState extends State<CartScreen> {
                     itemBuilder: (context, index) {
                       var item = snapshot.data!.docs[index];
                       String itemId = item.id;
-                      String productId =
-                          item['productId']; // Get productId from cart item
+                      String productId = item['productId'];
 
                       int cartQuantity = item['quantity'];
                       double itemDiscountedPrice = item['discountedPrice'];
                       _fetchProductDataAndMaxQuantity(productId, cartQuantity);
                       return ListTile(
                         onTap: () async {
-                          // Fetch product data before navigating to the details screen
                           await _fetchProductDataAndMaxQuantity(
                               productId, cartQuantity);
-
-                          // Now navigate to the details screen with the correct data
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -298,7 +224,7 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 Text(
                                     'Discounted Price: RM${(itemDiscountedPrice * cartQuantity).toStringAsFixed(2)}'),
-                                const Spacer(), // Add spacer for alignment
+                                const Spacer(),
                                 IconButton(
                                   icon: const Icon(Icons.remove_shopping_cart),
                                   onPressed: () {
@@ -332,7 +258,7 @@ class _CartScreenState extends State<CartScreen> {
                 BottomAppBar(
                   elevation: 6,
                   child: SizedBox(
-                    height: 56 + 12, // Increased height by 12 pixels
+                    height: 56 + 12,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -374,7 +300,7 @@ class _CartScreenState extends State<CartScreen> {
                         ElevatedButton.icon(
                           onPressed: selectedItems.isNotEmpty
                               ? () {
-                                  showCheckoutDialog(); // Open the dialog to refresh order details
+                                  showCheckoutDialog();
                                 }
                               : null,
                           icon: const Icon(Icons.shopping_cart),
@@ -434,14 +360,13 @@ class _QuantityAdjustmentState extends State<QuantityAdjustment> {
           },
         ),
         SizedBox(
-          width: 50, // Adjust the width to your preference
+          width: 50,
           child: TextField(
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             controller:
                 TextEditingController(text: _currentQuantity.toString()),
             onTap: () {
-              // Select all text when the field is tapped
               TextEditingController().selection = TextSelection(
                 baseOffset: 0,
                 extentOffset: TextEditingController().text.length,
@@ -478,12 +403,13 @@ class CheckoutDialog extends StatefulWidget {
   final String userUid;
 
   const CheckoutDialog({
+    super.key,
     required this.selectedItems,
     required this.userUid,
   });
 
   @override
-  _CheckoutDialogState createState() => _CheckoutDialogState();
+  State<CheckoutDialog> createState() => _CheckoutDialogState();
 }
 
 class _CheckoutDialogState extends State<CheckoutDialog> {
@@ -498,11 +424,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
   @override
   void initState() {
     super.initState();
-
-    // Fetch user information
     fetchUserInfo();
-
-    // Calculate order details
     totalOrderPrice = calculateTotalPrice();
     amountOfUserOrders = widget.selectedItems.length;
     shippingFees = amountOfUserOrders > 5 ? 0 : 5.00;
@@ -520,7 +442,6 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
 
   void fetchUserInfo() async {
     try {
-      // Fetch user information from Firestore using widget.userUid
       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userUid)
@@ -532,20 +453,15 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
           address = userSnapshot['address'];
           phone = userSnapshot['phone'];
         });
-
-        // After setting user information, refresh order details
         refreshOrderDetails();
       } else {
-        // Handle the case where the user document doesn't exist
-        print('User document does not exist.');
+        // print('User document does not exist.');
       }
     } catch (e) {
-      // Handle any errors that occur during the fetch
-      print('Error fetching user information: $e');
+      // print('Error fetching user information: $e');
     }
   }
 
-  // Calculate the total order price based on selected items
   double calculateTotalPrice() {
     double total = 0;
     for (var item in widget.selectedItems) {
@@ -557,7 +473,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Shipping Details'),
+      title: const Text('Shipping Details'),
       content: SingleChildScrollView(
         // Wrap content with SingleChildScrollView
         child: Column(
@@ -566,8 +482,8 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
             Text('Username: $username'),
             Text('Address: $address'),
             Text('Phone: $phone'),
-            SizedBox(height: 16),
-            Text('Selected Items:'),
+            const SizedBox(height: 16),
+            const Text('Selected Items:'),
             for (var item in widget.selectedItems)
               ListTile(
                 leading: Image.network(item['imageUrl']),
@@ -590,12 +506,10 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                             String shopName = sellerData['shopName'];
                             return Text('Shop: $shopName');
                           } else {
-                            return Text(
-                                'Shop: N/A'); // Handle case where seller data doesn't exist
+                            return const Text('Shop: N/A');
                           }
                         } else {
-                          return Text(
-                              'Shop: Loading...'); // Handle loading state
+                          return const Text('Shop: Loading...');
                         }
                       },
                     ),
@@ -606,7 +520,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                   ],
                 ),
               ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text('Amount of User Orders: $amountOfUserOrders'),
             Text('Shipping Fees: RM ${shippingFees.toStringAsFixed(2)}'),
             Text('Total Price: RM ${totalOrderPrice.toStringAsFixed(2)}'),
@@ -617,29 +531,24 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(); // Close the dialog
+            Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () async {
             try {
-              // Calculate the total order price
               double totalOrderPrice = calculateTotalPrice();
-
-              // Create an order document in the 'orders' collection
               DocumentReference orderRef =
                   await FirebaseFirestore.instance.collection('orders').add({
                 'userId': widget.userUid,
                 'totalOrderPrice': totalOrderPrice,
-                'finalPrice': finalPrice, // Add finalPrice
-                'shippingFees': shippingFees, // Add shippingFees
-                'status': 1, // Status for pending
+                'finalPrice': finalPrice,
+                'shippingFees': shippingFees,
+                'status': 1,
                 'timestamp': FieldValue.serverTimestamp(),
               });
               String orderId = orderRef.id;
-
-              // Fetch user information
               DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
                   .collection('users')
                   .doc(widget.userUid)
@@ -649,18 +558,13 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                 String username = userSnapshot['username'];
                 String address = userSnapshot['address'];
                 String phone = userSnapshot['phone'];
-
-                // Iterate through selected items
                 for (var item in widget.selectedItems) {
-                  // Get product details from the cart item
                   String productId = item['productId'];
                   int cartQuantity = item['quantity'];
                   double itemDiscountedPrice = item['discountedPrice'];
                   String imageUrl = item['imageUrl'];
                   String productName = item['name'];
                   String sellerId = item['sellerId'];
-
-                  // Fetch shopName based on sellerId
                   DocumentSnapshot sellerSnapshot = await FirebaseFirestore
                       .instance
                       .collection('sellers')
@@ -672,11 +576,7 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                   if (sellerSnapshot.exists) {
                     shopName = sellerSnapshot['shopName'];
                   }
-
-                  // Calculate order details
                   double itemTotalPrice = itemDiscountedPrice * cartQuantity;
-
-                  // Create an order document in the 'userOrders' subcollection
                   await orderRef.collection('userOrders').add({
                     'orderId': orderId,
                     'productId': productId,
@@ -686,10 +586,10 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                     'productName': productName,
                     'sellerId': sellerId,
                     'userId': widget.userUid,
-                    'status': 1, // Status for pending
+                    'status': 1,
                     'timestamp': FieldValue.serverTimestamp(),
                     'username': username,
-                    'shopName': shopName, // Use the fetched shopName
+                    'shopName': shopName,
                     'address': address,
                     'phone': phone,
                   });
@@ -701,13 +601,10 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                       .delete();
                 }
 
-                // Clear selected items
                 widget.selectedItems.clear();
 
-                // Close the dialog
                 Navigator.of(context).pop();
 
-                // Navigate to the order confirmation screen with the order ID
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -719,13 +616,13 @@ class _CheckoutDialogState extends State<CheckoutDialog> {
                 );
               } else {
                 // Handle the case where the user document doesn't exist
-                print('User document does not exist.');
+                // print('User document does not exist.');
               }
             } catch (e) {
-              print('Error creating order: $e');
+              // print('Error creating order: $e');
             }
           },
-          child: Text('Pay'),
+          child: const Text('Pay'),
         ),
       ],
     );

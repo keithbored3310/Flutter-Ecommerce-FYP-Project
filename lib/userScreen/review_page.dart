@@ -1,4 +1,4 @@
-import 'package:ecommerce/userScreen/delivery_page.dart';
+import 'package:ecommerce/screens/tabs.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,11 +24,11 @@ class _ReviewPageState extends State<ReviewPage> {
   double productRating = 5;
   double sellerRating = 5;
   TextEditingController commentController = TextEditingController();
-  String imageUrl = ''; // To store the fetched image URL
-  String productName = ''; // To store the fetched product name
-  String productId = ''; // To store the fetched product ID
-  String sellerId = ''; // To store the fetched seller ID
-  File? _pickedImage; // Store the picked image
+  String imageUrl = '';
+  String productName = '';
+  String productId = '';
+  String sellerId = '';
+  File? _pickedImage;
   bool isSubmitting = false;
 
   @override
@@ -66,14 +66,14 @@ class _ReviewPageState extends State<ReviewPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
-                Navigator.pop(context); // Navigate back to the previous page
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               child: const Text('Give Up'),
             ),
@@ -93,28 +93,24 @@ class _ReviewPageState extends State<ReviewPage> {
   }
 
   Future<String?> uploadReviewImage(File imageFile) async {
-    print('Uploading review image...');
+//    print('Uploading review image...');
     try {
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('review_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
 
       final uploadTask = storageRef.putFile(imageFile);
-
-      // Wait for the upload to complete
       final TaskSnapshot snapshot = await uploadTask;
-
-      // Get the download URL
       if (snapshot.state == TaskState.success) {
         final downloadURL = await snapshot.ref.getDownloadURL();
-        print('Review Image uploaded. Download URL: $downloadURL');
+        // print('Review Image uploaded. Download URL: $downloadURL');
         return downloadURL;
       } else {
-        print('Failed to upload review image.');
+        // print('Failed to upload review image.');
         return null;
       }
     } catch (e) {
-      print('Error uploading review image: $e');
+      // print('Error uploading review image: $e');
       return null;
     }
   }
@@ -126,16 +122,14 @@ class _ReviewPageState extends State<ReviewPage> {
           .doc(widget.orderId)
           .collection('userOrders')
           .doc(widget.userOrderId);
-      // Check if the user order document exists
       final userOrderSnapshot = await userOrderDoc.get();
       if (userOrderSnapshot.exists) {
-        // Update the document to add the 'isRated' field
         await userOrderDoc.set({'isRated': true}, SetOptions(merge: true));
       } else {
-        print('User order document does not exist');
+        // print('User order document does not exist');
       }
     } catch (e) {
-      print('Error updating user order isRated: $e');
+      // print('Error updating user order isRated: $e');
     }
   }
 
@@ -161,8 +155,8 @@ class _ReviewPageState extends State<ReviewPage> {
                 if (imageUrl.isNotEmpty)
                   Image.network(
                     imageUrl,
-                    width: 70, // Adjust the width as needed
-                    height: 70, // Adjust the height as needed
+                    width: 70,
+                    height: 70,
                   ),
                 const SizedBox(width: 8),
                 Text(
@@ -173,8 +167,8 @@ class _ReviewPageState extends State<ReviewPage> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             const Text(
               'Product Rating',
@@ -182,7 +176,7 @@ class _ReviewPageState extends State<ReviewPage> {
             ),
             const SizedBox(height: 8),
             RatingBar.builder(
-              initialRating: 5, // Default rating value
+              initialRating: 5,
               minRating: 1,
               direction: Axis.horizontal,
               allowHalfRating: true,
@@ -206,7 +200,7 @@ class _ReviewPageState extends State<ReviewPage> {
             ),
             const SizedBox(height: 8),
             RatingBar.builder(
-              initialRating: 5, // Default rating value
+              initialRating: 5,
               minRating: 1,
               direction: Axis.horizontal,
               allowHalfRating: true,
@@ -234,10 +228,9 @@ class _ReviewPageState extends State<ReviewPage> {
                 if (_pickedImage != null)
                   Image.file(
                     _pickedImage!,
-                    width: 200, // Set the width to the desired size
-                    height: 200, // Set the height to the desired size
-                    fit: BoxFit
-                        .cover, // Maintain aspect ratio and cover the space
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
                 ElevatedButton(
                   onPressed: () => _pickImage(ImageSource.camera),
@@ -266,14 +259,34 @@ class _ReviewPageState extends State<ReviewPage> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: isSubmitting
-                  ? null // Disable the button if submitting
+                  ? null
                   : () async {
-                      // Set isSubmitting to true when submitting
+                      const bool isImageMandatory = true;
+
+                      if (isImageMandatory && _pickedImage == null) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Review Picture Required'),
+                              content:
+                                  const Text('Please select a review picture.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        return;
+                      }
                       setState(() {
                         isSubmitting = true;
                       });
-
-                      // Get the image URL from the uploaded image
                       String? reviewImageUrl;
                       if (_pickedImage != null) {
                         reviewImageUrl = await uploadReviewImage(_pickedImage!);
@@ -287,7 +300,6 @@ class _ReviewPageState extends State<ReviewPage> {
 
                       String reviewId;
                       if (existingReviewQuery.docs.isNotEmpty) {
-                        // Update the existing review
                         final existingReviewDoc =
                             existingReviewQuery.docs.first;
                         reviewId = existingReviewDoc.id;
@@ -310,22 +322,21 @@ class _ReviewPageState extends State<ReviewPage> {
                           'comment': commentController.text ?? '',
                           'reviewImageUrl': reviewImageUrl ?? '',
                           'status': 4,
-                          'productId': productId, // Add this field
-                          'sellerId': sellerId, // Add this field
+                          'productId': productId,
+                          'sellerId': sellerId,
                         });
                       }
-
-                      // Add the 'isRated' field to the user order document
                       await _updateUserOrderIsRated();
-
-                      // Show a snackbar when the review is added successfully
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Review added successfully.'),
                         ),
                       );
-                      Navigator.pop(context);
-                      // Set isSubmitting back to false
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const TabsScreen()),
+                      );
                       setState(() {
                         isSubmitting = false;
                       });

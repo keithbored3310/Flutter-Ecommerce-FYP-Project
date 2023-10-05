@@ -15,8 +15,6 @@ class ProductDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the product details here
-            // You can use Image.network, Text, etc. to show the details
             SizedBox(
               width: double.infinity,
               height: 200,

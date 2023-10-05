@@ -48,7 +48,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Go back to previous screen
+            Navigator.pop(context);
           },
         ),
       ),
@@ -64,8 +64,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 final orderData = snapshot.data![index].data();
-                int orderStatus = orderData[
-                    'status']; // Assuming 'status' is the key for order status in your 'orderData' map
+                int orderStatus = orderData['status'];
 
                 return GestureDetector(
                   onTap: () {

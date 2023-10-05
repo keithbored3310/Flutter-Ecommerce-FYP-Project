@@ -20,40 +20,6 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
   String? _selectedBrand;
   String? _selectedType;
 
-  Widget _searchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      height: kToolbarHeight - 8,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.grey,
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value;
-                  print('Search Text: $_searchText');
-                });
-              },
-              decoration: const InputDecoration(
-                hintText: 'Search product...',
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> refreshProductList(
       FilterOptions filterOptions,
       String? selectedBrand,
@@ -121,11 +87,13 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
   List<QueryDocumentSnapshot<Map<String, dynamic>>>
       getFilteredAndSortedProducts(
           List<QueryDocumentSnapshot<Map<String, dynamic>>> products) {
-    // Apply sorting based on filter options
+    // Apply sorting based on filter options (case-insensitive)
     if (_filterOptions.sortAscending) {
-      products.sort((a, b) => a['name'].compareTo(b['name']));
+      products.sort(
+          (a, b) => a['name'].toLowerCase().compareTo(b['name'].toLowerCase()));
     } else if (_filterOptions.sortDescending) {
-      products.sort((a, b) => b['name'].compareTo(a['name']));
+      products.sort(
+          (a, b) => b['name'].toLowerCase().compareTo(a['name'].toLowerCase()));
     }
 
     // Apply sorting based on filter options for price

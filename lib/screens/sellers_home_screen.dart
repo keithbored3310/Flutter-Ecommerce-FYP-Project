@@ -85,11 +85,11 @@ class _SellerHomePageState extends State<SellerHomePage> {
         .get();
 
     if (reviewsSnapshot.docs.isEmpty) {
-      return 0.0; // No reviews yet
+      return 0.0;
     }
 
     double totalRating = 0;
-    int validReviewCount = 0; // Count of valid reviews (non-null sellerRating)
+    int validReviewCount = 0;
 
     for (var reviewDoc in reviewsSnapshot.docs) {
       final reviewData = reviewDoc.data();
@@ -101,7 +101,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
     }
 
     if (validReviewCount == 0) {
-      return 0.0; // No valid reviews with non-null sellerRating
+      return 0.0;
     }
 
     double averageRating = totalRating / validReviewCount;
@@ -109,8 +109,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
   }
 
   Future<void> _showSearchDialog() async {
-    final searchController = TextEditingController(
-        text: _searchText); // Initialize with current search text
+    final searchController = TextEditingController(text: _searchText);
 
     await showDialog(
       context: context,
@@ -133,7 +132,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 Navigator.pop(context);
                 setState(() {
                   _searchText = searchController.text;
-                  print('Search Text over here: $_searchText');
+                  // print('Search Text over here: $_searchText');
                 });
               },
               child: const Text('Search'),
@@ -142,7 +141,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
               onPressed: () {
                 Navigator.pop(context);
                 setState(() {
-                  _searchText = ''; // Clear search text
+                  _searchText = '';
                 });
               },
               child: const Text('Clear'),
@@ -187,8 +186,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
 
                 final sellerData = snapshot.data!.data()!;
                 final shopName = sellerData['shopName'];
-                final imageUrl =
-                    sellerData['image_url'] ?? ''; // Fetch the imageUrl
+                final imageUrl = sellerData['image_url'] ?? '';
                 ImageProvider<Object>? avatarImage;
 
                 if (imageUrl.isNotEmpty) {
@@ -200,17 +198,13 @@ class _SellerHomePageState extends State<SellerHomePage> {
                 }
                 final sellerRating = fetchSellerAverageRating(widget.sellerId);
                 return Row(
-                  mainAxisAlignment: MainAxisAlignment
-                      .center, // Align items horizontally at the center
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundImage:
-                          avatarImage, // Display the fetched imageUrl
+                      backgroundImage: avatarImage,
                     ),
-                    const SizedBox(
-                        width:
-                            16.0), // Add some spacing between CircleAvatar and Text
+                    const SizedBox(width: 16.0),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -256,7 +250,7 @@ class _SellerHomePageState extends State<SellerHomePage> {
                             ElevatedButton.icon(
                               onPressed: () async {
                                 if (_sellerInfo.isEmpty || _userInfo.isEmpty) {
-                                  return; // Don't proceed if information is not available
+                                  return;
                                 }
 
                                 final currentUserUid =
@@ -271,8 +265,6 @@ class _SellerHomePageState extends State<SellerHomePage> {
 
                                   final sender = currentUserUid;
                                   final receiver = sellerId;
-
-                                  // Check if the chat exists
                                   final chatSnapshot = await FirebaseFirestore
                                       .instance
                                       .collection('chats')
@@ -280,7 +272,6 @@ class _SellerHomePageState extends State<SellerHomePage> {
                                       .get();
 
                                   if (chatSnapshot.exists) {
-                                    // Chat exists, navigate to the chat screen
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -289,7 +280,6 @@ class _SellerHomePageState extends State<SellerHomePage> {
                                       ),
                                     );
                                   } else {
-                                    // Chat doesn't exist, initiate the chat
                                     await FirebaseFirestore.instance
                                         .collection('chats')
                                         .doc(chatId)

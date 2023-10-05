@@ -18,11 +18,10 @@ class AddProductScreen extends StatefulWidget {
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? _selectedBrand; // Nullable selected brand
-  String? _selectedCategory; // Nullable selected category
-  String? _selectedType; // Nullable selected type
+  String? _selectedBrand;
+  String? _selectedCategory;
+  String? _selectedType;
 
-  // Other form fields and their controllers
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _partNumberController = TextEditingController();
@@ -31,8 +30,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _discountController = TextEditingController();
   final _discountedPriceController = TextEditingController();
   bool _isSaving = false;
-
-  // Image picker variables
   File? _imageFile;
 
   String? _getCurrentUserId() {
@@ -98,10 +95,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   // Method to save the product details to Firestore
-  // Method to save the product details to Firestore
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate() || _isSaving) {
-      // Validation failed or already saving, return early
+      return;
+    }
+
+    const bool isImageMandatory = true;
+
+    if (isImageMandatory && _imageFile == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Product Picture Required'),
+            content: const Text('Please select a product picture.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
@@ -110,9 +128,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
-      final sellersId = _getCurrentUserId(); // Get the current user's ID
+      final sellersId = _getCurrentUserId();
 
-      // If sellersId is null, display an error message and return
       if (sellersId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -123,25 +140,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
         return;
       }
 
-      // Check if brand, category, and type are null, and set them to 'Other' if needed
       _selectedBrand ??= 'Others';
       _selectedCategory ??= 'Others';
       _selectedType ??= 'Others';
 
-      // Get a reference to the Firestore collection where you want to store the products
       final productsCollection =
           FirebaseFirestore.instance.collection('products');
 
-      // Get the next auto-incremented number
       int autoIncrementedNumber = await _getNextAutoIncrementNumber();
 
-      // Create a new document for the product
       final newProductDoc = productsCollection.doc();
 
-      // Prepare the data to be saved
       final productData = {
         'id': autoIncrementedNumber,
-        'sellersId': sellersId, // Add the sellersId to the product data
+        'sellersId': sellersId,
         'brand': _selectedBrand,
         'category': _selectedCategory,
         'type': _selectedType,
@@ -153,12 +165,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
         'discount': double.tryParse(_discountController.text) ?? 0.0,
         'discountedPrice':
             double.tryParse(_discountedPriceController.text) ?? 0.0,
-        // Add more fields for other form fields
       };
 
       // Save the data to Firestore
       await newProductDoc.set(productData);
-      print('Uploading image to Firebase Storage...');
+      // print('Uploading image to Firebase Storage...');
       // Upload image to Firebase Storage and get the image URL
       if (_imageFile != null) {
         final storageRef = FirebaseStorage.instance
@@ -166,29 +177,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
             .child('product_images/${newProductDoc.id}.jpg');
         final uploadTask = storageRef.putFile(_imageFile!);
         final downloadURL = await (await uploadTask).ref.getDownloadURL();
-        print('Image uploaded. Download URL: $downloadURL');
+        // print('Image uploaded. Download URL: $downloadURL');
         // Add the image URL to the product data
         productData['imageUrl'] = downloadURL;
         await newProductDoc.update(productData);
       } else {
-        print('No image file to upload.');
+        // print('No image file to upload.');
       }
-
-      // Show a success message or navigate to another screen
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Product added successfully'),
           duration: Duration(seconds: 2),
         ),
       );
-      // Wait for a short duration to display the success message
       await Future.delayed(const Duration(seconds: 2));
 
-// Navigate back to the previous page
       Navigator.pop(context);
     } catch (e) {
       // Handle any errors that may occur
-      print('Error saving product: $e');
+      // print('Error saving product: $e');
       // Show an error message or handle the error appropriately
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -200,7 +207,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Future<int> _getNextAutoIncrementNumber() async {
-    // Get the latest auto-incremented number from Firestore
     var latestNumberSnapshot = await FirebaseFirestore.instance
         .collection('auto_increment')
         .doc('products_counter')
@@ -209,8 +215,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     int latestNumber = latestNumberSnapshot.exists
         ? latestNumberSnapshot.data()!['latest_number']
         : 0;
-
-    // Increment the latest number and update it in Firestore
     int nextNumber = latestNumber + 1;
     await FirebaseFirestore.instance
         .collection('auto_increment')
@@ -232,7 +236,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Drop-down list for brands
               BrandDropdown(
                 selectedBrand: _selectedBrand,
                 onBrandChanged: (String? brand) {
@@ -240,10 +243,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     _selectedBrand = brand;
                   });
                 },
-                // validator: _validateBrand,
               ),
-
-              const SizedBox(height: 16.0), // Add spacing between the fields
+              const SizedBox(height: 16.0),
               CategoryDropdown(
                 selectedCategory: _selectedCategory,
                 onCategoryChanged: (String? category) {
@@ -251,10 +252,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     _selectedCategory = category;
                   });
                 },
-                // validator: _validateCategory,
               ),
-
-              const SizedBox(height: 16.0), // Add spacing between the fields
+              const SizedBox(height: 16.0),
               TypeDropdown(
                 selectedType: _selectedType,
                 onTypeChanged: (String? type) {
@@ -262,11 +261,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     _selectedType = type;
                   });
                 },
-                // validator: _validateType,
               ),
               const SizedBox(height: 16.0),
-              // Add more form fields and buttons as needed
-              // Name TextField
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
@@ -280,8 +276,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Add more form fields and buttons as needed
-              // Name TextField
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -295,7 +289,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Part Number TextField
               TextFormField(
                 controller: _partNumberController,
                 decoration: const InputDecoration(labelText: 'Part Number'),
@@ -311,7 +304,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Quantity TextField
               TextFormField(
                 controller: _quantityController,
                 decoration: const InputDecoration(labelText: 'Quantity'),
@@ -327,7 +319,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Price TextField
               TextFormField(
                 controller: _priceController,
                 keyboardType: TextInputType.number,
@@ -347,7 +338,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 },
               ),
               const SizedBox(height: 16.0),
-              // Discount TextField
               TextFormField(
                 controller: _discountController,
                 keyboardType: TextInputType.number,
@@ -369,9 +359,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 16.0),
-              // Display discounted price
               TextFormField(
                 controller: _discountedPriceController,
                 enabled: false,
@@ -380,7 +368,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16.0),
               _buildImagePreview(),
-              // Image picker buttons
               Row(
                 children: [
                   Expanded(
@@ -402,14 +389,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   ),
                 ],
               ),
-              // Save button
-              // Save button
               ElevatedButton(
                 onPressed: _isSaving
                     ? null
                     : () {
                         if (_formKey.currentState?.validate() == true) {
-                          // The form is valid, proceed with saving the product
                           _saveProduct();
                         }
                       },

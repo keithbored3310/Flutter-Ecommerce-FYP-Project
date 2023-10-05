@@ -21,8 +21,7 @@ class _HomepageScreenState extends State<HomepageScreen> {
 
     productsSnapshot.docs.forEach((productDoc) {
       Map<String, dynamic> productData = productDoc.data();
-      productData['productId'] =
-          productDoc.id; // Set the productId using document ID
+      productData['productId'] = productDoc.id;
       products.add(productData);
     });
 
@@ -87,25 +86,21 @@ class _HomepageScreenState extends State<HomepageScreen> {
                               );
                             },
                             child: Container(
-                              width: MediaQuery.of(context)
-                                  .size
-                                  .width, // Adjust width as needed
-                              height: 200.0, // Adjust height as needed
-                              padding: const EdgeInsets.all(8.0), // Add padding
+                              width: MediaQuery.of(context).size.width,
+                              height: 200.0,
+                              padding: const EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.grey), // Add border
+                                border: Border.all(color: Colors.grey),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Image.network(
                                     imageUrl,
-                                    height:
-                                        150.0, // Adjust image height within the container
+                                    height: 150.0,
                                     fit: BoxFit.contain,
                                   ),
-                                  const SizedBox(height: 8.0), // Add spacing
+                                  const SizedBox(height: 8.0),
                                   Text(
                                     productName,
                                     style: const TextStyle(

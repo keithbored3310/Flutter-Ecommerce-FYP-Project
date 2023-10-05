@@ -19,15 +19,16 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
   String? _selectedCategory;
   String? _selectedType;
 
-  // Insert the getFilteredAndSortedProducts function here
   List<QueryDocumentSnapshot<Map<String, dynamic>>>
       getFilteredAndSortedProducts(
           List<QueryDocumentSnapshot<Map<String, dynamic>>> products) {
-    // Apply sorting based on filter options
+    // Apply sorting based on filter options (case-insensitive)
     if (_filterOptions.sortAscending) {
-      products.sort((a, b) => a['name'].compareTo(b['name']));
+      products.sort(
+          (a, b) => a['name'].toLowerCase().compareTo(b['name'].toLowerCase()));
     } else if (_filterOptions.sortDescending) {
-      products.sort((a, b) => b['name'].compareTo(a['name']));
+      products.sort(
+          (a, b) => b['name'].toLowerCase().compareTo(a['name'].toLowerCase()));
     }
 
     // Apply sorting based on filter options for price
@@ -100,7 +101,6 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
                         _selectedCategory = newCategory;
                         _selectedType = newType;
                       });
-                      // No need to call Navigator.pop(context) here
                     },
                     onClear: () {
                       setState(() {
@@ -109,7 +109,6 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
                         _selectedCategory = null;
                         _selectedType = null;
                       });
-                      // No need to call Navigator.pop(context) here
                     },
                   );
                 },
@@ -140,8 +139,6 @@ class _ProductPanelScreenState extends State<ProductPanelScreen> {
                     .toLowerCase()
                     .contains(widget.query.toLowerCase()))
                 .toList();
-
-            // Use the new function to get the filtered and sorted products
             final sortedAndFilteredProducts =
                 getFilteredAndSortedProducts(filteredProducts);
 

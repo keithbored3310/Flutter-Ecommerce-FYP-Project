@@ -4,18 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/widget/courier_drop_down.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:pdf/pdf.dart' as pdf;
 import 'package:path_provider/path_provider.dart'; // Add this import
 // import 'package:flutter/services.dart'; // Add this import for permission handling
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:uuid/uuid.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class ManageOrderPage extends StatefulWidget {
   final String sellerId;
 
-  const ManageOrderPage({required this.sellerId});
+  const ManageOrderPage({super.key, required this.sellerId});
 
   @override
   State<ManageOrderPage> createState() => _ManageOrderPageState();
@@ -23,11 +21,12 @@ class ManageOrderPage extends StatefulWidget {
 
 class _ManageOrderPageState extends State<ManageOrderPage> {
   String? _selectedCourier;
+  int? _selectedStatusFilter;
 
   @override
   void initState() {
     super.initState();
-    requestStoragePermission(); // Call the permission request in initState
+    requestStoragePermission();
   }
 
   void updateSelectedCourier(String? courier) {
@@ -54,10 +53,10 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
         };
       }
     } catch (error) {
-      print('Error fetching seller data: $error');
+      // print('Error fetching seller data: $error');
     }
 
-    return {}; // Return an empty map if data cannot be fetched
+    return {};
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> _userOrdersStream() {
@@ -84,11 +83,9 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
         'status': newStatus,
         'trackingId': newTrackingId,
         'selectedCourier': selectedCourier,
-        // ... other fields to update
       });
     } catch (error) {
-      print('Error updating status: $error');
-      // Handle error
+      // print('Error updating status: $error');
     }
   }
 
@@ -117,11 +114,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
   Future<void> requestStoragePermission() async {
     final PermissionStatus status = await Permission.storage.request();
     if (status.isGranted) {
-      // Permission granted
-    } else {
-      // Permission denied
-      // Handle permission denied here
-    }
+    } else {}
   }
 
   Future<void> generateAndSavePDF(
@@ -133,11 +126,9 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
     String? selectedCourier,
     String sellerId,
   ) async {
-    // Request storage permission
     await requestStoragePermission();
 
-    // Get the external storage directory
-    final appDocDir = await getExternalStorageDirectory();
+    // final appDocDir = await getExternalStorageDirectory();
     final path = (await getExternalStorageDirectory())?.path ?? '';
 
     // Fetch seller data
@@ -192,7 +183,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
     final pdfBytes = await pdf.save();
 
     // Generate a unique PDF ID (you can use a package like 'uuid' for this)
-    final pdfId = 'pdf_${Uuid().v4()}';
+    // final pdfId = 'pdf_${Uuid().v4()}';
 
     // Set the PDF name to include the timestamp
     final pdfName = '$username-$timestamp.pdf';
@@ -207,7 +198,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
       ),
     );
     // Print the path where the PDF is saved
-    print('PDF saved to external storage: ${file.path}');
+    // print('PDF saved to external storage: ${file.path}');
   }
 
   @override
@@ -215,6 +206,34 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Orders for Seller'),
+        actions: [
+          DropdownButton<int>(
+            value: _selectedStatusFilter,
+            onChanged: (value) {
+              setState(() {
+                _selectedStatusFilter = value;
+              });
+            },
+            items: const [
+              DropdownMenuItem<int>(
+                value: null,
+                child: Text('All'),
+              ),
+              DropdownMenuItem<int>(
+                value: 2,
+                child: Text('To Ship'),
+              ),
+              DropdownMenuItem<int>(
+                value: 3,
+                child: Text('To Receive'),
+              ),
+              DropdownMenuItem<int>(
+                value: 4,
+                child: Text('Completed'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _userOrdersStream(),
@@ -230,10 +249,17 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
           } else {
             final userOrders = snapshot.data!.docs;
 
+            final filteredUserOrders = _selectedStatusFilter == null
+                ? userOrders
+                : userOrders
+                    .where((userOrder) =>
+                        userOrder.data()['status'] == _selectedStatusFilter)
+                    .toList();
+
             return ListView(
               children: ListTile.divideTiles(
                 context: context,
-                tiles: userOrders.map(
+                tiles: filteredUserOrders.map(
                   (userOrder) {
                     final userOrderData = userOrder.data();
                     final userOrderId = userOrderData['userOrderId'];
@@ -247,8 +273,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                     final quantity = userOrderData['quantity'];
                     final itemTotalPrice = userOrderData['itemTotalPrice'];
                     final status = userOrderData['status'];
-                    final timestampString = timestamp
-                        .toString(); // Format the DateTime object as a string
+                    final timestampString = timestamp.toString();
 
                     final statusColumn = status == 2
                         ? IconButton(
@@ -284,7 +309,7 @@ class _ManageOrderPageState extends State<ManageOrderPage> {
                                                   widget.sellerId,
                                                 );
                                               },
-                                              child: Text('Generate PDF'),
+                                              child: const Text('Generate PDF'),
                                             ),
                                           ],
                                         ),

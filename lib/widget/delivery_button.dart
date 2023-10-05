@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 class DeliveryButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final int count; // Add this parameter
+  final int count;
   final VoidCallback onPressed;
 
   const DeliveryButton({
     super.key,
     required this.icon,
     required this.label,
-    required this.count, // Add this parameter
+    required this.count,
     required this.onPressed,
   });
 

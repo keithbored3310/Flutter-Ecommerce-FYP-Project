@@ -24,7 +24,6 @@ class _UserImagePickerState extends State<UserImagePicker> {
   void initState() {
     super.initState();
     if (widget.initialImage != null) {
-      // Set initial image if provided
       final image = widget.initialImage as FileImage;
       _pickedImageFile = File(image.file.path);
     }

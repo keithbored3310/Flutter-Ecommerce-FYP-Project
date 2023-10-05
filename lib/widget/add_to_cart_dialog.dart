@@ -3,13 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddToCartDialog extends StatefulWidget {
   final int maxQuantity;
-  final String productId; // Add productId parameter
+  final String productId;
   final String userId;
 
   const AddToCartDialog({
     super.key,
     required this.maxQuantity,
-    required this.productId, // Add productId parameter
+    required this.productId,
     required this.userId,
   });
 
@@ -71,7 +71,7 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
                 },
               ),
               SizedBox(
-                width: 50, // Adjust the width to your preference
+                width: 50,
                 child: TextFormField(
                   focusNode: _quantityFocusNode,
                   controller: _quantityController,
@@ -97,7 +97,7 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(); // Close the dialog
+            Navigator.of(context).pop();
           },
           child: const Text('Cancel'),
         ),
@@ -106,7 +106,7 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
               ? null
               : () async {
                   setState(() {
-                    isAddingToCart = true; // Start adding to cart
+                    isAddingToCart = true;
                   });
 
                   // Use the passed productId directly
@@ -116,7 +116,6 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
                   // You can use the 'quantity', 'productId', 'widget.userId', and other necessary data
                   await _addToCart(quantity, productId, widget.userId);
 
-                  // Show snackbar for successful add to cart
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Added to Cart'),
@@ -124,13 +123,13 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
                   );
 
                   setState(() {
-                    isAddingToCart = false; // Finished adding to cart
+                    isAddingToCart = false;
                   });
 
-                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(context).pop();
                 },
           child: isAddingToCart
-              ? const CircularProgressIndicator() // Show progress indicator
+              ? const CircularProgressIndicator()
               : const Text('Add to Cart'),
         ),
       ],
@@ -147,7 +146,7 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
 
       if (!productSnapshot.exists) {
         // Handle the case where the product doesn't exist
-        print('Product not found');
+        // print('Product not found');
         return;
       }
 
@@ -182,16 +181,14 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
       }
 
       if (existingCartItemQuery.docs.isNotEmpty) {
-        // If item already exists, update the quantity
         final existingCartItem = existingCartItemQuery.docs.first;
         final existingQuantity = existingCartItem['quantity'];
         await existingCartItem.reference
             .update({'quantity': existingQuantity + quantity});
       } else {
-        // If item doesn't exist, add a new document
         await FirebaseFirestore.instance.collection('carts').add({
           'userId': userId,
-          'sellerId': sellerId, // Save the seller's ID
+          'sellerId': sellerId,
           'productId': productId,
           'quantity': quantity,
           'name': name,
@@ -201,7 +198,7 @@ class _AddToCartDialogState extends State<AddToCartDialog> {
         });
       }
     } catch (e) {
-      print('Error adding to cart: $e');
+      // print('Error adding to cart: $e');
       // Handle any errors that may occur
     }
   }

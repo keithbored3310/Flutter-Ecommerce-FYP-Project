@@ -16,12 +16,12 @@ class CourierDropdown extends StatefulWidget {
 }
 
 class _CourierDropdownState extends State<CourierDropdown> {
-  String? _selectedCourier; // Nullable selected courier
+  String? _selectedCourier;
 
   @override
   void initState() {
     super.initState();
-    _selectedCourier = widget.selectedCourier; // Set the initial value
+    _selectedCourier = widget.selectedCourier;
   }
 
   @override
@@ -31,7 +31,6 @@ class _CourierDropdownState extends State<CourierDropdown> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final couriers = snapshot.data!.docs;
-          // Build the drop-down list using the data from Firestore
           return DropdownButtonFormField<String>(
             value: _selectedCourier,
             onChanged: (value) {
@@ -43,7 +42,7 @@ class _CourierDropdownState extends State<CourierDropdown> {
             items: [
               const DropdownMenuItem<String>(
                 value: null,
-                child: Text('Select Courier'), // Default text
+                child: Text('Select Courier'),
               ),
               ...couriers
                   .map((courier) {
@@ -54,7 +53,7 @@ class _CourierDropdownState extends State<CourierDropdown> {
                         child: Text(courierName),
                       );
                     } else {
-                      return null; // Return null for null courierName
+                      return null;
                     }
                   })
                   .whereType<DropdownMenuItem<String>>()

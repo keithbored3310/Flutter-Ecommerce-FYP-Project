@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ViewAllReviewsPage extends StatelessWidget {
+class ProductsReviewPage extends StatelessWidget {
   final String productId;
 
-  const ViewAllReviewsPage({super.key, required this.productId});
+  const ProductsReviewPage({super.key, required this.productId});
 
   Widget _buildRatingStars(dynamic rating) {
     if (rating == null || rating is! num) {

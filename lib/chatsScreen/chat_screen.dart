@@ -22,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late String _currentUserUid;
   late TextEditingController _messageController;
   List<QueryDocumentSnapshot> _messages = [];
-  bool _isLoading = false;
+  // bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -33,48 +33,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge &&
-          _scrollController.position.pixels != 0) {
-        // Do not fetch more messages here
-      }
+          _scrollController.position.pixels != 0) {}
     });
   }
 
-  Future<void> _fetchMoreMessages() async {
-    if (_messages.isEmpty) return;
-
-    final lastMessage = _messages.first;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final newMessages = await _firestore
-        .collection('chats')
-        .doc(widget.chatId)
-        .collection('messages')
-        .orderBy('timestamp', descending: true) // Keep it descending
-        .startAfterDocument(lastMessage)
-        .get()
-        .then((querySnapshot) => querySnapshot.docs);
-
-    setState(() {
-      _isLoading = false;
-      _messages.insertAll(0, newMessages); // Insert at the beginning
-    });
+//Display the enlarged image
+  void _showEnlargedImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    await _firestore
-        .collection('chats')
-        .doc(widget.chatId)
-        .collection('messages')
-        .add({
+    // Create a reference to the chat document
+    final chatDoc = _firestore.collection('chats').doc(widget.chatId);
+
+    // Use a batch to update multiple fields atomically
+    final batch = _firestore.batch();
+
+    // Update the 'unreadMessage' field for both sender and receiver
+    batch.update(chatDoc, {
+      'unreadMessage': FieldValue.increment(1),
+    });
+
+    // Add the message to the collection
+    batch.set(chatDoc.collection('messages').doc(), {
       'senderUid': _currentUserUid,
       'text': text,
       'timestamp': FieldValue.serverTimestamp(),
     });
+
+    // Commit the batch
+    await batch.commit();
 
     await _updateLastMessage(text);
 
@@ -82,7 +85,6 @@ class _ChatScreenState extends State<ChatScreen> {
       _messageController.clear();
     });
 
-    // Scroll to the latest message
     _scrollController.animateTo(
       0.0,
       curve: Curves.easeOut,
@@ -90,12 +92,14 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+// Update the last message in the chat
   Future<void> _updateLastMessage(String text) async {
     await _firestore.collection('chats').doc(widget.chatId).update({
       'lastMessage': text,
     });
   }
 
+// Send an image
   Future<void> _sendImage(String imagePath) async {
     final Reference ref = _storage
         .ref()
@@ -116,8 +120,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     await _updateLastMessage('Image sent');
-
-    // Scroll to the latest message
     _scrollController.animateTo(
       0.0,
       curve: Curves.easeOut,
@@ -179,9 +181,15 @@ class _ChatScreenState extends State<ChatScreen> {
                               : CrossAxisAlignment.start,
                           children: [
                             if (message['imageUrl'] != null)
-                              Image.network(
-                                message['imageUrl'],
-                                height: 150,
+                              GestureDetector(
+                                onTap: () {
+                                  _showEnlargedImage(
+                                      context, message['imageUrl']);
+                                },
+                                child: Image.network(
+                                  message['imageUrl'],
+                                  height: 150,
+                                ),
                               ),
                             if (message['text'] != null)
                               Text(

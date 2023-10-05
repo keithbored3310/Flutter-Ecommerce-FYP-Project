@@ -24,7 +24,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   String _statusMessage = '';
   bool _isLoading = false;
 
-  // Toggles the password visibility
   bool _isOriginalPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -181,18 +180,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       setState(() {
         _isLoading = false;
       });
-
-      // Show Snackbar indicating successful password change
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password changed successfully.'),
-          duration: Duration(seconds: 2), // Adjust the duration as needed
+          duration: Duration(seconds: 2),
         ),
       );
 
-      // Navigate back after Snackbar disappears
-      await Future.delayed(
-          const Duration(seconds: 2)); // Wait for Snackbar to disappear
+      await Future.delayed(const Duration(seconds: 2));
       Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
       setState(() {

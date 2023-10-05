@@ -32,25 +32,23 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredAddress = '';
   File? _selectedImage;
   var _isAuthenticating = false;
-
-  // Toggles the password visibility
   bool _isPasswordVisible = false;
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
 
+    // Display dialog message if no image is selected and other situation
     if (!isValid || (!_isLogin && _selectedImage == null)) {
-      // Show an error message in a dialog if the image is mandatory
       if (!_isLogin && _selectedImage == null) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Profile Picture Required'),
-              content: Text('Please select a profile picture.'),
+              title: const Text('Profile Picture Required'),
+              content: const Text('Please select a profile picture.'),
               actions: <Widget>[
                 TextButton(
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -71,13 +69,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       if (_isLogin) {
-        // Log user in
         final userCredentials = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );
       } else {
-        // Sign user up
         final userCredentials = await _firebase.createUserWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
@@ -88,11 +84,7 @@ class _AuthScreenState extends State<AuthScreen> {
             .child('${userCredentials.user!.uid}.jpg');
         await storageRef.putFile(_selectedImage!);
         final imageUrl = await storageRef.getDownloadURL();
-
-        // Get the next auto-incremented number
         int autoIncrementedNumber = await _getNextAutoIncrementNumber();
-
-        // Add user data with auto-incremented ID to the Firestore collection
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredentials.user!.uid)
@@ -109,7 +101,6 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } on FirebaseAuthException catch (error) {
       if (error.code == 'email-already-in-use') {
-        // Email is already registered
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -129,7 +120,6 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       } else if (error.code == 'wrong-password' ||
           error.code == 'user-not-found') {
-        // Wrong email or password
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -148,9 +138,7 @@ class _AuthScreenState extends State<AuthScreen> {
             );
           },
         );
-      } else {
-        // Handle other FirebaseAuthException errors
-      }
+      } else {}
     } finally {
       setState(() {
         _isAuthenticating = false;
@@ -159,7 +147,6 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<int> _getNextAutoIncrementNumber() async {
-    // Get the latest auto-incremented number from Firestore
     var latestNumberSnapshot = await FirebaseFirestore.instance
         .collection('auto_increment')
         .doc('users_counter')
@@ -168,8 +155,6 @@ class _AuthScreenState extends State<AuthScreen> {
     int latestNumber = latestNumberSnapshot.exists
         ? latestNumberSnapshot.data()!['latest_number']
         : 0;
-
-    // Increment the latest number and update it in Firestore
     int nextNumber = latestNumber + 1;
     await FirebaseFirestore.instance
         .collection('auto_increment')
@@ -264,8 +249,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 },
                               ),
                             ),
-                            obscureText:
-                                !_isPasswordVisible, // Toggle visibility
+                            obscureText: !_isPasswordVisible,
                             validator: (value) {
                               if (value == null || value.trim().length < 6) {
                                 return 'Password must be at least 6 characters long.';
@@ -275,7 +259,6 @@ class _AuthScreenState extends State<AuthScreen> {
                             onSaved: (value) {
                               _enteredPassword = value!;
                             },
-                            // ... Existing code ...
                           ),
                           if (!_isLogin)
                             TextFormField(
@@ -313,14 +296,12 @@ class _AuthScreenState extends State<AuthScreen> {
                                 if (value!.isEmpty) {
                                   return 'Please enter your IC number';
                                 }
-
-                                // IC number validation logic for Malaysia
                                 final icRegex = RegExp(r'^[0-9]{12}$');
                                 if (!icRegex.hasMatch(value)) {
                                   return 'Please enter a valid Malaysia IC number';
                                 }
 
-                                return null; // Return null if the IC number is valid
+                                return null;
                               },
                               onSaved: (value) {
                                 _enteredIC = value!;
@@ -375,7 +356,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     ),
                                   );
                                 },
-                                child: Text('Forgot Password?'),
+                                child: const Text('Forgot Password?'),
                               ),
                         ],
                       ),

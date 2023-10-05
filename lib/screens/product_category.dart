@@ -11,7 +11,7 @@ Future<List<String>> fetchCategories() async {
             (doc.data() as Map<String, dynamic>)['category'] as String? ?? '')
         .toList();
   } catch (e) {
-    print('Error fetching categories: $e');
+    // print('Error fetching categories: $e');
     return [];
   }
 }
@@ -57,8 +57,8 @@ class ProductCategoryScreen extends StatelessWidget {
                       },
                     ),
                     const Divider(
-                      thickness: 2.0, // Set the line width
-                      color: Colors.black, // Set the line color
+                      thickness: 2.0,
+                      color: Colors.black,
                     ),
                   ],
                 );

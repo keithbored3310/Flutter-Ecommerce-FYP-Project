@@ -53,16 +53,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               UserDetailsScreen(userId: _userId!),
                         ),
                       );
-                    } else {
-                      // Handle case where userId is null (user not authenticated)
-                    }
+                    } else {}
                   },
                 ),
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [

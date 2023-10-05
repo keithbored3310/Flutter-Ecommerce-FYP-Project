@@ -34,11 +34,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   bool _isCurrentUserSeller = false;
   String? _sellerId;
 
+// To refresh the page
   Future<void> _refreshData() async {
-    // Update the order counts and seller status
     await _updateOrderCounts();
-
-    // Reload the seller status stream
     _streamSubscription?.cancel();
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
@@ -47,10 +45,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           .doc(currentUser.uid)
           .snapshots();
 
-      _streamSubscription = isSellerStream.listen((snapshot) {
-        // Handle seller status changes
-        // ...
-      });
+      _streamSubscription = isSellerStream.listen((snapshot) {});
     }
   }
 
@@ -65,18 +60,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           .collection('sellers')
           .doc(currentUser.uid)
           .snapshots();
-
-      // Start listening to the stream and assign the subscription to _streamSubscription
       _streamSubscription = isSellerStream.listen((snapshot) {
         if (snapshot.exists) {
-          // The document exists in the sellers collection, so the current user is a seller
           setState(() {
             _isCurrentUserSeller = true;
-            _sellerId =
-                currentUser.uid; // Set the sellerId to the current user's ID
+            _sellerId = currentUser.uid;
           });
         } else {
-          // The document does not exist in the sellers collection, so the current user is not a seller
           setState(() {
             _isCurrentUserSeller = false;
             _sellerId = null;
@@ -134,7 +124,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   Future<void> _updateOrderCounts() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null && mounted) {
-      // Add mounted check here
       final orderCounts = await fetchOrderCounts(currentUser.uid);
       setState(() {
         toPayCount = orderCounts['toPay'] ?? 0;
@@ -156,7 +145,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
   @override
   void dispose() {
-    // Unsubscribe from the stream when the widget is disposed of
     _streamSubscription?.cancel();
     super.dispose();
   }
@@ -172,10 +160,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 75, // Adjust the height as needed
+              height: 75,
               child: FirestoreDataFetcher(
-                userId: FirebaseAuth.instance.currentUser?.uid ??
-                    '', // Provide a default value for userId
+                userId: FirebaseAuth.instance.currentUser?.uid ?? '',
               ),
             ),
             const SizedBox(height: 16),
@@ -186,10 +173,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   child: DeliveryButton(
                     icon: Icons.wallet,
                     label: 'To Pay',
-                    count: toPayCount, // Add this parameter
+                    count: toPayCount,
                     onPressed: () {
-                      _navigateToDeliveryPage(
-                          context, 0); // Navigate to 'To Pay' tab (index 0)
+                      _navigateToDeliveryPage(context, 0);
                     },
                   ),
                 ),
@@ -197,10 +183,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   child: DeliveryButton(
                     icon: Icons.card_giftcard,
                     label: 'To Ship',
-                    count: toShipCount, // Add this parameter
+                    count: toShipCount,
                     onPressed: () {
-                      _navigateToDeliveryPage(
-                          context, 1); // Navigate to 'To Ship' tab (index 1)
+                      _navigateToDeliveryPage(context, 1);
                     },
                   ),
                 ),
@@ -208,10 +193,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   child: DeliveryButton(
                     icon: Icons.fire_truck,
                     label: 'To Receive',
-                    count: toReceiveCount, // Add this parameter
+                    count: toReceiveCount,
                     onPressed: () {
-                      _navigateToDeliveryPage(
-                          context, 2); // Navigate to 'To Receive' tab (index 2)
+                      _navigateToDeliveryPage(context, 2);
                     },
                   ),
                 ),
@@ -219,18 +203,17 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   child: DeliveryButton(
                     icon: Icons.star,
                     label: 'Complete',
-                    count: toRateCount, // Add this parameter
+                    count: toRateCount,
                     onPressed: () {
-                      _navigateToDeliveryPage(
-                          context, 3); // Navigate to 'To Rate' tab (index 3)
+                      _navigateToDeliveryPage(context, 3);
                     },
                   ),
                 ),
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [
@@ -241,12 +224,10 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   onPressed: () {
                     final currentUser = FirebaseAuth.instance.currentUser;
                     if (currentUser == null) {
-                      // Not logged in, show a message or redirect to login
                       return;
                     }
 
                     if (_isCurrentUserSeller && _sellerId == currentUser.uid) {
-                      // The current user is a seller and the sellerId matches the user's ID
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -269,8 +250,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [
@@ -290,15 +271,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [
                 ButtonWidget(
                   icon: Icons.category,
                   trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Category',
+                  label: 'Product Category',
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -311,15 +292,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [
                 ButtonWidget(
                   icon: Icons.local_activity,
                   trailingIcon: Icons.arrow_forward_ios,
-                  label: 'Activity',
+                  label: 'User Activity',
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -333,8 +314,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Row(
               children: [
@@ -344,7 +325,6 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   label: 'Favorite Item',
                   onPressed: () {
                     if (currentUser == null) {
-                      // Not logged in, show a message or redirect to login
                       return;
                     }
 
@@ -352,8 +332,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FavoriteProductGridScreen(
-                          userId: currentUser
-                              .uid, // Pass the current user's ID as userId
+                          userId: currentUser.uid,
                         ),
                       ),
                     );
@@ -362,8 +341,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ],
             ),
             const Divider(
-              thickness: 2.0, // Set the line width
-              color: Colors.black, // Set the line color
+              thickness: 2.0,
+              color: Colors.black,
             ),
             Container(
               decoration: BoxDecoration(

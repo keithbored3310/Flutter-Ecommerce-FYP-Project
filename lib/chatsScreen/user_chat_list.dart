@@ -2,7 +2,7 @@ import 'package:ecommerce/screens/tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:ecommerce/chatsScreen/chat_screen.dart'; // Import the chat screen if needed
+import 'package:ecommerce/chatsScreen/chat_screen.dart';
 
 class UserChatListScreen extends StatefulWidget {
   const UserChatListScreen({super.key});
@@ -21,31 +21,37 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
     if (user != null) {
       currentUserUid = user.uid;
     }
-    _markAllChatsAsRead(); // Mark all chats as read when the screen is loaded
+    // _markAllChatsAsRead(); // Mark all chats as read when the screen is loaded
   }
 
+// Mark a chat as read
   Future<void> markChatAsRead(String chatId) async {
-    // Update the chat document in Firestore to mark it as read
     await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
-      'isRead': true, // Add an 'isRead' field to your chat document
+      'unreadMessage': 0,
     });
   }
 
-  Future<void> _markAllChatsAsRead() async {
-    final chatDocs = await FirebaseFirestore.instance
-        .collection('chats')
-        .where('sender', isEqualTo: currentUserUid)
-        .get();
+// // Mark all chats as read
+//   // Mark all chats as read
+//   Future<void> _markAllChatsAsRead() async {
+//     final chatDocs = await FirebaseFirestore.instance
+//         .collection('chats')
+//         .where('sender', isEqualTo: currentUserUid)
+//         .get();
 
-    for (final chatDoc in chatDocs.docs) {
-      await chatDoc.reference.update({
-        'isRead': true, // Mark each chat as read
-      });
-    }
+//     for (final chatDoc in chatDocs.docs) {
+//       if (chatDoc.data()['newMessage'] == true) {
+//         // If new messages are present in the chat, don't mark it as read
+//         continue;
+//       }
 
-    // Update chat status count in TabsScreen using the static property
-    TabsScreen.chatStatusCount = 0; // Set the count to 0
-  }
+//       await chatDoc.reference.update({
+//         'isRead': true,
+//       });
+//     }
+
+//     TabsScreen.chatStatusCount = 0;
+//   }
 
   @override
   Widget build(BuildContext context) {
@@ -76,14 +82,13 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
               final sellerShopName = chatData['sellerShopName'];
               final lastMessage = chatData['lastMessage'];
               final sellerImageUrl = chatData['sellerImageUrl'];
-              final isRead = chatData['isRead'] ??
-                  false; // Add 'isRead' field to chat document
+              final isRead = chatData['isRead'] ?? false;
 
               return Dismissible(
-                key: Key(chatId), // Unique key for each chat item
+                key: Key(chatId),
                 direction: DismissDirection.endToStart,
                 background: Container(
-                  color: Colors.red, // Background color when swiped
+                  color: Colors.red,
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
                   child: const Icon(
@@ -92,7 +97,6 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
                   ),
                 ),
                 onDismissed: (direction) {
-                  // Handle chat deletion here
                   _deleteChat(chatId, context);
                 },
                 child: ListTile(
@@ -104,10 +108,7 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
                   title: Text(sellerShopName ?? ''),
                   subtitle: Text(lastMessage ?? ''),
                   onTap: () async {
-                    // Mark the chat as read when the user taps on it
                     await markChatAsRead(chatId);
-
-                    // Navigate to the chat screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -117,7 +118,6 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
                       ),
                     );
                   },
-                  // Use a different color for unread chats
                   tileColor: isRead ? null : Colors.grey[200],
                 ),
               );
@@ -129,24 +129,19 @@ class _UserChatListScreenState extends State<UserChatListScreen> {
   }
 
   void _deleteChat(String chatId, BuildContext context) {
-    // Delete the chat document from Firestore
     FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .delete()
         .then((value) {
-      // Show a SnackBar to indicate that the chat has been deleted
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chat deleted.'),
-          duration: Duration(seconds: 2), // You can adjust the duration
+          duration: Duration(seconds: 2),
         ),
       );
-
-      // Update the state to trigger a rebuild of the chat list
       setState(() {});
     }).catchError((error) {
-      // Handle any errors that may occur during deletion.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error deleting chat.'),

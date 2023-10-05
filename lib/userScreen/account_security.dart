@@ -28,7 +28,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              // Navigate to the edit user screen
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -53,7 +52,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             return const CircularProgressIndicator();
           }
 
-          // Data has been fetched successfully
           final data = snapshot.data!.data() as Map<String, dynamic>?;
 
           if (data != null) {
@@ -195,8 +193,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             ),
                             TextButton(
                               onPressed: () {
-                                // Navigate to the change password screen
-                                // (Implement the change password screen)
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

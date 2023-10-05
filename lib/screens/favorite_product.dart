@@ -58,7 +58,7 @@ class FavoriteProductGridScreen extends StatelessWidget {
               itemCount: favoriteProducts.length,
               itemBuilder: (context, index) {
                 final favoriteProduct = favoriteProducts[index];
-                final productId = favoriteProduct.id; // Fetch the productId
+                final productId = favoriteProduct.id;
 
                 return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                   stream: FirebaseFirestore.instance
@@ -81,14 +81,13 @@ class FavoriteProductGridScreen extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
-                          // Navigate to the product details screen when tapped
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ProductDetailsUserScreen(
                                 productData: productData,
                                 maxQuantity: maxQuantity,
-                                productId: productId, // Pass the productId
+                                productId: productId,
                               ),
                             ),
                           );

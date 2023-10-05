@@ -16,12 +16,12 @@ class TypeDropdown extends StatefulWidget {
 }
 
 class _TypeDropdownState extends State<TypeDropdown> {
-  String? _selectedType; // Nullable selected type
+  String? _selectedType;
 
   @override
   void initState() {
     super.initState();
-    _selectedType = widget.selectedType; // Set the initial value to null
+    _selectedType = widget.selectedType;
   }
 
   @override
@@ -31,7 +31,6 @@ class _TypeDropdownState extends State<TypeDropdown> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final types = snapshot.data!.docs;
-          // Build the drop-down list using the data from Firestore
           return DropdownButtonFormField<String>(
             value: _selectedType,
             onChanged: (value) {
@@ -43,7 +42,7 @@ class _TypeDropdownState extends State<TypeDropdown> {
             items: [
               const DropdownMenuItem<String>(
                 value: null,
-                child: Text('Select Type'), // Default text
+                child: Text('Select Type'),
               ),
               ...types
                   .map((type) {
@@ -54,7 +53,7 @@ class _TypeDropdownState extends State<TypeDropdown> {
                         child: Text(typeName),
                       );
                     } else {
-                      return null; // Return null for null typeName
+                      return null;
                     }
                   })
                   .whereType<DropdownMenuItem<String>>()

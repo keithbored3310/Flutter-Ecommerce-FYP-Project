@@ -30,7 +30,7 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
     super.initState();
     // Fetch seller data from Firestore and populate the text fields
     _fetchSellerData();
-    print('Seller ID in this page: ${widget.sellerId}');
+    // print('Seller ID in this page: ${widget.sellerId}');
   }
 
   void _fetchSellerData() async {
@@ -50,7 +50,6 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
           _emailController.text = sellerData['email'] ?? '';
           _phoneNumberController.text = sellerData['phoneNumber'] ?? '';
 
-          // Set the avatar image based on the imageUrl if it exists
           if (sellerData.containsKey('image_url') &&
               sellerData['image_url'] != null &&
               sellerData['image_url'].isNotEmpty) {
@@ -61,13 +60,12 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching seller data: $e');
+      // print('Error fetching seller data: $e');
     }
   }
 
   void _updateSellerData() async {
     try {
-      // Update the seller data fields in Firestore
       await FirebaseFirestore.instance
           .collection('sellers')
           .doc(widget.sellerId)
@@ -109,7 +107,7 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
       Navigator.pop(context);
     } catch (e) {
       // Show an error message
-      print('Error updating seller data: $e');
+      // print('Error updating seller data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred. Please try again.')),
       );
@@ -174,7 +172,6 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
               icon: const Icon(Icons.save),
               onPressed: () {
                 _updateSellerData();
-                // Call the function to upload the profile image here if needed
               },
             ),
           ],
@@ -186,9 +183,7 @@ class _EditSellerScreenState extends State<EditSellerScreen> {
             children: [
               Center(
                 child: GestureDetector(
-                  onTap: () {
-                    // Call the function to pick an image here
-                  },
+                  onTap: () {},
                   child: CircleAvatar(
                     radius: 60,
                     backgroundImage: _avatarImage,

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:ecommerce/widget/brand_drop_down.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,9 +30,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final TextEditingController _discountController = TextEditingController();
   final TextEditingController _discountedPriceController =
       TextEditingController();
-  String? _selectedBrand; // Nullable selected brand
-  String? _selectedCategory; // Nullable selected category
-  String? _selectedType; // Nullable selected type
+  String? _selectedBrand;
+  String? _selectedCategory;
+  String? _selectedType;
 
   bool _isLoading = false;
 
@@ -42,7 +41,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize the text controllers with the current product details
     _nameController.text = widget.productData['name'];
     _descriptionController.text = widget.productData['description'];
     _partNumberController.text = widget.productData['partNumber'];
@@ -69,13 +67,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   Widget _buildImagePreview() {
     if (_imageFile == null) {
-      // Display the current image from the database
       return Image.network(
         widget.productData['imageUrl'],
         fit: BoxFit.cover,
       );
     } else {
-      // Display the selected image from the picker
       return Image.file(
         _imageFile!,
         fit: BoxFit.cover,
@@ -106,7 +102,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
-                key: _formKey, // Add this line
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -161,7 +157,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         });
                       },
                     ),
-                    // Name TextField
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(labelText: 'Name'),
@@ -172,7 +167,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Description TextField
                     TextFormField(
                       controller: _descriptionController,
                       decoration:
@@ -184,7 +178,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Part Number TextField
                     TextFormField(
                       controller: _partNumberController,
                       decoration:
@@ -196,7 +189,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Price TextField
                     TextFormField(
                       controller: _priceController,
                       keyboardType: TextInputType.number,
@@ -214,7 +206,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Quantity TextField
                     TextFormField(
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
@@ -229,7 +220,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Discount TextField
                     TextFormField(
                       controller: _discountController,
                       keyboardType: TextInputType.number,
@@ -247,7 +237,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         return null;
                       },
                     ),
-                    // Discounted Price TextField
                     TextFormField(
                       controller: _discountedPriceController,
                       enabled: false,
@@ -255,7 +244,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           const InputDecoration(labelText: 'Discounted Price'),
                     ),
                     const SizedBox(height: 16.0),
-                    // Save button
                     ElevatedButton(
                       onPressed: _saveProductChanges,
                       child: const Text('Save Changes'),
@@ -269,14 +257,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   Future<void> _saveProductChanges() async {
     try {
-      // Show a loading indicator while updating the product details
       setState(() {
         _isLoading = true;
       });
 
-      // Validation check
       if (_formKey.currentState!.validate()) {
-        // Extract the values from the text controllers
         final updatedProductData = {
           'name': _nameController.text,
           'description': _descriptionController.text,
@@ -286,13 +271,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
           'discount': double.tryParse(_discountController.text) ?? 0.0,
           'discountedPrice':
               double.tryParse(_discountedPriceController.text) ?? 0.0,
-          'brand': _selectedBrand, // Update the brand field
+          'brand': _selectedBrand,
           'category': _selectedCategory,
           'type': _selectedType,
-          // Add more fields as needed
         };
 
-        // Upload the image to Firebase Storage if a new image was picked
         String imageUrl = widget.productData['imageUrl'];
         if (_imageFile != null) {
           final ref = firebase_storage.FirebaseStorage.instance
@@ -303,16 +286,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
           imageUrl = await ref.getDownloadURL();
         }
 
-        // Add the updated image URL to the product data
         updatedProductData['imageUrl'] = imageUrl;
 
-        // Update the product details in Firestore
         await FirebaseFirestore.instance
             .collection('products')
             .doc(widget.productId)
             .update(updatedProductData);
 
-        // Update the userOrders collectionGroups where 'productName' matches the old product name
         await FirebaseFirestore.instance
             .collectionGroup('userOrders')
             .where('productName', isEqualTo: widget.productData['name'])
@@ -321,14 +301,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
           if (querySnapshot.docs.isNotEmpty) {
             for (final userOrderDoc in querySnapshot.docs) {
               await userOrderDoc.reference.update({
-                'productName':
-                    _nameController.text, // Update with the new product name
+                'productName': _nameController.text,
               });
             }
           }
         });
-
-        // Show a success message or handle the update success
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Product details updated successfully.'),
@@ -336,13 +313,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
           ),
         );
 
-        // Wait for a short duration before popping the edit product page
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pop(context);
       }
     } catch (e) {
-      // Handle any errors that may occur during the update process
-      print('Error updating product details: $e');
+      // print('Error updating product details: $e');
 
       // Show an error message or handle the error appropriately
       ScaffoldMessenger.of(context).showSnackBar(
@@ -352,7 +327,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
         ),
       );
     } finally {
-      // Remove the loading indicator when the process is completed
       setState(() {
         _isLoading = false;
       });

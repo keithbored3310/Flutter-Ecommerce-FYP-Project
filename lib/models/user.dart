@@ -4,8 +4,7 @@ class User {
   final String email;
   final String ic;
   final String imageUrl;
-  final String
-      password; // Note: It's generally better not to store passwords in plain text.
+  final String password;
   final String phone;
   final String username;
 

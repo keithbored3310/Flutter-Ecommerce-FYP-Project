@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DeliveryPage extends StatefulWidget {
-  final int initialTabIndex; // Add this parameter
+  final int initialTabIndex;
 
   const DeliveryPage({super.key, required this.initialTabIndex});
 
@@ -14,7 +14,7 @@ class DeliveryPage extends StatefulWidget {
 class _DeliveryPageState extends State<DeliveryPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late String userUid; // Define userUid here
+  late String userUid;
 
   @override
   void initState() {

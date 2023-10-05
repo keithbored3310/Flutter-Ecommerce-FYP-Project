@@ -7,11 +7,11 @@ class ManageSalesScreen extends StatefulWidget {
   const ManageSalesScreen({Key? key, required this.sellerId}) : super(key: key);
 
   @override
-  _ManageSalesScreenState createState() => _ManageSalesScreenState();
+  State<ManageSalesScreen> createState() => _ManageSalesScreenState();
 }
 
 class _ManageSalesScreenState extends State<ManageSalesScreen> {
-  int selectedMonth = DateTime.now().month; // Default to the current month
+  int selectedMonth = DateTime.now().month;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +35,6 @@ class _ManageSalesScreenState extends State<ManageSalesScreen> {
               setState(() {
                 selectedMonth = value!;
               });
-              // Call your fetchProductSales method with the selected month here
-              // You can call it here or trigger it from a button, as needed
-              // fetchProductSales(selectedMonth);
             },
           ),
           Expanded(
@@ -65,17 +62,17 @@ class _ManageSalesScreenState extends State<ManageSalesScreen> {
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 'Total Earnings',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               Text(
-                                '\RM$totalEarnings',
-                                style: TextStyle(
+                                'RM$totalEarnings',
+                                style: const TextStyle(
                                   fontSize: 24,
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold,
@@ -98,7 +95,7 @@ class _ManageSalesScreenState extends State<ManageSalesScreen> {
                                 children: [
                                   Text('Quantity: ${productSales.quantity}'),
                                   Text(
-                                    'Item Total Price: \RM${productSales.itemTotalPrice.toStringAsFixed(2)}',
+                                    'Item Total Price: RM${productSales.itemTotalPrice.toStringAsFixed(2)}',
                                   ),
                                 ],
                               ),
@@ -149,15 +146,15 @@ class _ManageSalesScreenState extends State<ManageSalesScreen> {
 
           return productSales;
         } else {
-          print('Error: "productSales" is missing or not a List');
+          // print('Error: "productSales" is missing or not a List');
           return [];
         }
       } else {
-        print('Error: Document does not exist');
+        // print('Error: Document does not exist');
         return [];
       }
     } catch (e) {
-      print('Error fetching product sales: $e');
+      // print('Error fetching product sales: $e');
       return [];
     }
   }

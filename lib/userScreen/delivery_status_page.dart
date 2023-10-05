@@ -3,7 +3,6 @@ import 'package:ecommerce/userScreen/payment_gateway.dart';
 import 'package:ecommerce/userScreen/review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ecommerce/screens/order_confirmation_x.dart';
 import 'package:ecommerce/userScreen/order_detail_page.dart';
 
 class DeliveryStatusPage extends StatefulWidget {
@@ -54,9 +53,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
     }
 
     if (mounted) {
-      setState(() {
-        // Update the UI after fetching user orders
-      });
+      setState(() {});
     }
   }
 
@@ -64,13 +61,11 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
     List<DocumentSnapshot> ordersAndUserOrders = [];
 
     if (status == 1) {
-      // Fetch the document IDs of orders that match the criteria
       QuerySnapshot orderIdsQuerySnapshot = await FirebaseFirestore.instance
           .collection('orders')
           .where('userId', isEqualTo: widget.userUid)
           .get();
 
-      // Fetch userOrders using the retrieved order IDs
       for (var orderDoc in orderIdsQuerySnapshot.docs) {
         String orderId = orderDoc.id;
 
@@ -111,7 +106,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
         if (ordersAndUserOrdersSnapshot.connectionState ==
             ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(), // Wrap in Center
+            child: CircularProgressIndicator(),
           );
         } else if (!ordersAndUserOrdersSnapshot.hasData ||
             ordersAndUserOrdersSnapshot.data!.isEmpty) {
@@ -230,8 +225,7 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
                                                 .connectionState ==
                                             ConnectionState.waiting) {
                                           return const Center(
-                                            child:
-                                                CircularProgressIndicator(), // Wrap in Center
+                                            child: CircularProgressIndicator(),
                                           );
                                         } else if (!deliveryMessageSnapshot
                                                 .hasData ||
@@ -262,17 +256,13 @@ class _DeliveryStatusPageState extends State<DeliveryStatusPage>
                               if (orderStatus == 3)
                                 ElevatedButton(
                                   onPressed: () async {
-                                    // Update the status in the userOrders subcollection to 4
                                     await FirebaseFirestore.instance
                                         .collection('orders')
-                                        .doc(data[
-                                            'orderId']) // Use the orderId to access the order document
+                                        .doc(data['orderId'])
                                         .collection('userOrders')
-                                        .doc(orderOrUserOrder
-                                            .id) // Use the userOrderId to access the userOrder document
+                                        .doc(orderOrUserOrder.id)
                                         .update({'status': 4});
 
-                                    // You might want to add additional code here if needed
                                     await FirebaseFirestore.instance
                                         .collection('reviews')
                                         .add({

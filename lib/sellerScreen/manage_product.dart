@@ -6,8 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ecommerce/widget/filter_dialog.dart';
 
-// Make sure to adjust the import path as needed
-
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
 
@@ -75,8 +73,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _showSearchDialog() async {
-    final searchController = TextEditingController(
-        text: _searchText); // Initialize with current search text
+    final searchController = TextEditingController(text: _searchText);
 
     await showDialog(
       context: context,
@@ -99,7 +96,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 Navigator.pop(context);
                 setState(() {
                   _searchText = searchController.text;
-                  print('Search Text over here: $_searchText');
+                  // print('Search Text over here: $_searchText');
                   // Clear filter options and selected values
                   _filterOptions = FilterOptions();
                   _selectedBrand = null;
@@ -113,8 +110,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 setState(() {
-                  _searchText = ''; // Clear search text
-                  _filterOptions = FilterOptions(); // Clear filter options
+                  _searchText = '';
+                  _filterOptions = FilterOptions();
                   _selectedBrand = null;
                   _selectedCategory = null;
                   _selectedType = null;
@@ -161,9 +158,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       });
                     },
                     onClear: () {
-                      // Clear filters and refresh product list
-                      refreshProductList(FilterOptions(), null, null,
-                          null); // Pass initialFilterOptions and null for selectedBrand
+                      refreshProductList(FilterOptions(), null, null, null);
                     },
                   );
                 },
@@ -173,14 +168,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Navigate to the AddTypePage when the add icon button is pressed
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const AddProductScreen(),
                 ),
               ).then((_) {
-                // Refresh the list of types when returning from the AddTypePage
                 setState(() {});
               });
             },
@@ -203,7 +196,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               List<QueryDocumentSnapshot<Map<String, dynamic>>> products =
                   snapshot.data!.docs;
 
-              print('Search Text in this place: $_searchText');
+              // print('Search Text in this place: $_searchText');
               // Filter based on product name
               final filteredProducts = products
                   .where((product) => product['name']
@@ -211,14 +204,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       .toLowerCase()
                       .contains(_searchText.toLowerCase()))
                   .toList();
-              final currentSellerId =
-                  _getCurrentSellerId(); // Get the current seller's sellerId
+              final currentSellerId = _getCurrentSellerId();
 
               final sortedAndFilteredProducts =
                   getFilteredAndSortedProducts(filteredProducts);
 
               if (products.isEmpty) {
-                // Display a message when there are no products
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -229,14 +220,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // Navigate to the AddProductScreen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const AddProductScreen(),
                             ),
                           ).then((_) {
-                            // Refresh the list of products when returning from the AddProductScreen
                             setState(() {});
                           });
                         },
@@ -261,7 +250,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   final double discount = productData['discount'] ?? 0.0;
                   final double discountedPrice = (1 - discount / 100) * price;
 
-                  // Check if the current seller's sellerId matches the product's sellerId
                   if (currentSellerId == productData['sellersId']) {
                     return ProductGridItem(
                       productName: productData['name'],
@@ -270,8 +258,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       discount: discount,
                       discountedPrice: discountedPrice,
                       onTap: () {
-                        _navigateToProductDetails(
-                            productData); // Pass the entire product details
+                        _navigateToProductDetails(productData);
                       },
                       onEdit: () {
                         _navigateToEditProductScreen(productId, productData);
@@ -281,7 +268,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       },
                     );
                   } else {
-                    // Product is not added by the current seller, so don't display it
                     return const SizedBox.shrink();
                   }
                 },
@@ -317,7 +303,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ),
     ).then((_) {
-      // Refresh the list of products when returning from the EditProductScreen
       setState(() {});
     });
   }
@@ -325,7 +310,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
   // Method to delete a product
   Future<void> _deleteProduct(String productId) async {
     try {
-      // Show a confirmation dialog before deleting the product
       bool confirmDelete = await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -336,13 +320,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(false); // Don't delete
+                  Navigator.of(context).pop(false);
                 },
                 child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(true); // Confirm delete
+                  Navigator.of(context).pop(true);
                 },
                 child: const Text('Delete'),
               ),
@@ -356,12 +340,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
             .collection('products')
             .doc(productId)
             .delete();
-        // Show a success message or handle deletion success
       }
     } catch (e) {
-      // Handle any errors that may occur during deletion
-      print('Error deleting product: $e');
-      // Show an error message or handle the error appropriately
+      // print('Error deleting product: $e');
     }
   }
 }
@@ -372,7 +353,7 @@ class ProductGridItem extends StatelessWidget {
   final double price;
   final double discount;
   final double discountedPrice;
-  final VoidCallback onTap; // Add imageUrl
+  final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 

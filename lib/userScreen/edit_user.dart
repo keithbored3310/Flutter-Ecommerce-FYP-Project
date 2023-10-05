@@ -27,7 +27,6 @@ class _EditUserScreenState extends State<EditUserScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch user data from Firestore and populate the text fields
     _fetchUserData();
   }
 
@@ -47,7 +46,6 @@ class _EditUserScreenState extends State<EditUserScreen> {
           _phoneController.text = userData['phone'] ?? '';
           _addressController.text = userData['address'] ?? '';
 
-          // Set the avatar image based on the imageUrl
           if (userData['image_url'] != null &&
               userData['image_url'].isNotEmpty) {
             _avatarImage =
@@ -58,7 +56,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      // print('Error fetching user data: $e');
     }
   }
 
@@ -82,7 +80,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
       await Future.delayed(const Duration(seconds: 2));
       Navigator.pop(context);
     } catch (e) {
-      print('Error updating user data: $e');
+      // print('Error updating user data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred. Please try again.')),
       );
@@ -136,7 +134,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
         const SnackBar(content: Text('Profile image uploaded successfully')),
       );
     } catch (e) {
-      print('Error uploading profile image: $e');
+      // print('Error uploading profile image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred. Please try again.')),
       );

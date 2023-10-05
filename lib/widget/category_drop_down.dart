@@ -16,13 +16,12 @@ class CategoryDropdown extends StatefulWidget {
 }
 
 class _CategoryDropdownState extends State<CategoryDropdown> {
-  String? _selectedCategory; // Nullable selected category
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    _selectedCategory =
-        widget.selectedCategory; // Set the initial value to null
+    _selectedCategory = widget.selectedCategory;
   }
 
   @override
@@ -32,7 +31,6 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final categories = snapshot.data!.docs;
-          // Build the drop-down list using the data from Firestore
           return DropdownButtonFormField<String>(
             value: _selectedCategory,
             onChanged: (value) {
@@ -44,7 +42,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
             items: [
               const DropdownMenuItem<String>(
                 value: null,
-                child: Text('Select Category'), // Default text
+                child: Text('Select Category'),
               ),
               ...categories
                   .map((category) {
@@ -55,7 +53,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                         child: Text(categoryName),
                       );
                     } else {
-                      return null; // Return null for null categoryName
+                      return null;
                     }
                   })
                   .whereType<DropdownMenuItem<String>>()

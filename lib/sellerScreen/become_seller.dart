@@ -74,6 +74,29 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
       return;
     }
 
+    const bool isImageMandatory = true;
+
+    if (isImageMandatory && _imageFile == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Profile Picture Required'),
+            content: const Text('Please select a profile picture.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
     setState(() {
       _isSubmitting = true;
     });
@@ -130,7 +153,6 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
         MaterialPageRoute(builder: (context) => const SellerHomeScreen()),
       );
     } catch (error) {
-      // Handle errors
     } finally {
       setState(() {
         _isSubmitting = false;
@@ -139,7 +161,6 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
   }
 
   Future<int> _getNextAutoIncrementNumber() async {
-    // Get the latest auto-incremented number from Firestore
     var latestNumberSnapshot = await FirebaseFirestore.instance
         .collection('auto_increment')
         .doc('sellers_counter')
@@ -149,7 +170,6 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
         ? latestNumberSnapshot.data()!['latest_number']
         : 0;
 
-    // Increment the latest number and update it in Firestore
     int nextNumber = latestNumber + 1;
     await FirebaseFirestore.instance
         .collection('auto_increment')
@@ -163,8 +183,6 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      // Handle the case when the user is not authenticated.
-      // You might want to show an error message or redirect to the login screen.
       return const Scaffold(
         body: Center(
           child: Text('User not authenticated.'),
@@ -288,7 +306,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                 ElevatedButton(
                   onPressed: () => _submitRegistration(context, userId),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator() // Show CircularProgressIndicator when submitting
+                      ? const CircularProgressIndicator()
                       : const Text('Submit Registration'),
                 ),
               ],

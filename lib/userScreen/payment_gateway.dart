@@ -1,27 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/userScreen/delivery_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import for TextInputFormatter
+import 'package:flutter/services.dart';
 
 class PaymentGatewayScreen extends StatefulWidget {
   final String orderId;
   final String userUid;
 
-  PaymentGatewayScreen({
+  const PaymentGatewayScreen({
+    super.key,
     required this.orderId,
     required this.userUid,
   });
 
   @override
-  _PaymentGatewayScreenState createState() => _PaymentGatewayScreenState();
+  State<PaymentGatewayScreen> createState() => _PaymentGatewayScreenState();
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
-  TextEditingController _cardNumberController = TextEditingController();
-  TextEditingController _expiryDateController = TextEditingController();
-  TextEditingController _cvvController = TextEditingController();
-  TextEditingController _expiryMonthController = TextEditingController();
-  TextEditingController _expiryYearController = TextEditingController();
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _expiryDateController = TextEditingController();
+  final TextEditingController _cvvController = TextEditingController();
+  final TextEditingController _expiryMonthController = TextEditingController();
+  final TextEditingController _expiryYearController = TextEditingController();
 
   Future<void> updateSellerSalesStatistics(String sellerId, double orderTotal,
       List<Map<String, dynamic>> productSales) async {
@@ -33,11 +34,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         FirebaseFirestore.instance.collection('sellers').doc(sellerId);
     final sellerSalesDocReference =
         sellerDocReference.collection('sales').doc('$year-$month');
-
-    // Create a new monthly sales document if it doesn't exist
     await sellerSalesDocReference.set({}, SetOptions(merge: true));
-
-    // Fetch the existing sales data
     final existingSalesData =
         (await sellerSalesDocReference.get()).data() as Map<String, dynamic>?;
 
@@ -45,19 +42,12 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     List<Map<String, dynamic>> updatedProductSales = [];
 
     if (productSalesData is List<dynamic>) {
-      // Convert the dynamic list to List<Map<String, dynamic>>
       updatedProductSales = List<Map<String, dynamic>>.from(productSalesData);
-    } else {
-      // Handle the case where 'productSales' is not a list of maps
-    }
-
-    // Iterate through the provided productSales and add/update them in the array
+    } else {}
     for (final productSale in productSales) {
       final productId = productSale['productId'];
       final quantity = productSale['quantity'];
       final itemTotalPrice = productSale['itemTotalPrice'];
-
-      // Fetch the productName from the 'products' collection
       final productDoc = await FirebaseFirestore.instance
           .collection('products')
           .doc(productId)
@@ -66,17 +56,14 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       if (productDoc.exists) {
         final productName = productDoc['name'] as String?;
         if (productName != null) {
-          // Check if a product with the same ID already exists in the array
           final existingProductIndex = updatedProductSales
               .indexWhere((product) => product['productId'] == productId);
 
           if (existingProductIndex != -1) {
-            // Update quantity and itemTotalPrice if the product already exists in the array
             updatedProductSales[existingProductIndex]['quantity'] += quantity;
             updatedProductSales[existingProductIndex]['itemTotalPrice'] +=
                 itemTotalPrice;
           } else {
-            // Add the product to the array
             updatedProductSales.add({
               'productId': productId,
               'quantity': quantity,
@@ -87,8 +74,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         }
       }
     }
-
-    // Update the product sales array in Firestore
     await sellerSalesDocReference
         .set({'productSales': updatedProductSales}, SetOptions(merge: true));
   }
@@ -110,13 +95,13 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context, true); // Confirmed cancel
+                  Navigator.pop(context, true);
                 },
                 child: const Text('Yes'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context, false); // Not canceling
+                  Navigator.pop(context, false);
                 },
                 child: const Text('No'),
               ),
@@ -130,11 +115,9 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     if (value == null || value.isEmpty) {
       return 'Please enter card number';
     }
-    // Additional validation logic for card number (e.g., length or format)
     if (value.length != 16) {
       return 'Card number must be 16 digits';
     }
-    // You can add more validation rules here, such as checking for valid card formats.
     return null;
   }
 
@@ -168,7 +151,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     if (value == null || value.isEmpty) {
       return 'Please enter CVV';
     }
-    // Additional validation logic for CVV (e.g., length)
     if (value.length != 3) {
       return 'CVV must be 3 digits';
     }
@@ -190,16 +172,12 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               .get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              // While waiting for data to load, display a loading indicator
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              // If an error occurs, display an error message
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData || !snapshot.data!.exists) {
-              // If no data is available or the document doesn't exist, display a message
               return const Center(child: Text('Order Data Not Found'));
             } else {
-              // Data is available, display the payment information
               final orderData = snapshot.data!.data() as Map<String, dynamic>;
               final double finalPrice = orderData['finalPrice'];
 
@@ -227,8 +205,10 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
+                          counter: Text('Max 16 digits'),
                         ),
                         validator: _validateCardNumber,
+                        maxLength: 16,
                       ),
                       const SizedBox(height: 20),
                       const Text('Expiry Date'),
@@ -240,28 +220,25 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(
-                                    2), // Limit to 2 characters (MM)
+                                LengthLimitingTextInputFormatter(2),
                               ],
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 hintText: 'MM',
                               ),
                               validator: _validateExpiryMonth,
                             ),
                           ),
-                          SizedBox(
-                              width: 10), // Add some spacing between MM and YY
+                          const SizedBox(width: 10),
                           Expanded(
                             child: TextFormField(
                               controller: _expiryYearController,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(
-                                    2), // Limit to 2 characters (YY)
+                                LengthLimitingTextInputFormatter(2),
                               ],
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 hintText: 'YY',
                               ),
@@ -283,7 +260,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () async {
-                          // Validate card details
                           String? cardNumberError =
                               _validateCardNumber(_cardNumberController.text);
                           String? expiryMonthError =
@@ -296,7 +272,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                               expiryMonthError != null ||
                               expiryYearError != null ||
                               cvvError != null) {
-                            // Display validation errors in a dialog
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
@@ -325,174 +300,173 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                               ),
                             );
                           } else {
-                            // Payment logic - All data is valid
-                            // Clear the text fields
-                            _cardNumberController.text = '';
-                            _expiryDateController.text = '';
-                            _cvvController.text = '';
-                            // Show loading dialog
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
+                            final expiryMonth =
+                                int.parse(_expiryMonthController.text);
+                            final expiryYear =
+                                int.parse(_expiryYearController.text);
+                            final currentYear = DateTime.now().year % 100;
+                            final currentMonth = DateTime.now().month;
 
-                            final userOrdersQuerySnapshot =
-                                await FirebaseFirestore.instance
-                                    .collection('orders')
-                                    .doc(widget.orderId)
-                                    .collection('userOrders')
-                                    .where('status', isEqualTo: 1)
-                                    .where('userId', isEqualTo: widget.userUid)
-                                    .get();
-
-                            final batch = FirebaseFirestore.instance.batch();
-
-                            // Add orderId to the 'orders' document
-                            batch.update(
-                              FirebaseFirestore.instance
-                                  .collection('orders')
-                                  .doc(widget.orderId),
-                              {'orderId': widget.orderId},
-                            );
-
-                            for (final userOrderDoc
-                                in userOrdersQuerySnapshot.docs) {
-                              final userOrderId = userOrderDoc.id;
-
-                              // Update the userOrder document with a new field 'userOrderId'
-                              batch.update(
-                                userOrderDoc.reference,
-                                {'userOrderId': userOrderId},
+                            if (expiryYear < currentYear ||
+                                (expiryYear == currentYear &&
+                                    expiryMonth < currentMonth)) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Card Expired'),
+                                  content: const Text(
+                                      'The card has already expired.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
                               );
-                            }
+                            } else {
+                              _cardNumberController.text = '';
+                              _expiryDateController.text = '';
+                              _cvvController.text = '';
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
 
-                            batch.update(
-                              FirebaseFirestore.instance
-                                  .collection('orders')
-                                  .doc(widget.orderId),
-                              {'status': 2},
-                            );
-
-                            final userOrdersQuery = FirebaseFirestore.instance
-                                .collection('orders')
-                                .doc(widget.orderId)
-                                .collection('userOrders')
-                                .where('status', isEqualTo: 1)
-                                .where('userId', isEqualTo: widget.userUid);
-
-                            final userOrdersSnapshot =
-                                await userOrdersQuery.get();
-
-                            for (final userOrderDoc
-                                in userOrdersSnapshot.docs) {
-                              batch.update(userOrderDoc.reference, {
-                                'status': 2,
-                              });
-                            }
-
-                            // Commit the updates to 'orders' and 'userOrders'
-                            await batch.commit();
-
-                            // Deduct product quantities and update seller statistics
-                            final productQuantityBatch =
-                                FirebaseFirestore.instance.batch();
-
-                            for (final userOrderDoc
-                                in userOrdersSnapshot.docs) {
-                              final productId = userOrderDoc['productId'];
-                              final quantity = userOrderDoc['quantity'];
-                              print('productId: $productId');
-                              print('quantity: $quantity');
-                              final productDocRef = FirebaseFirestore.instance
-                                  .collection('products')
-                                  .doc(productId);
-                              final productDoc = await productDocRef.get();
-
-                              // Inside your Flutter code where you process orders
-                              // Inside your Flutter code where you process orders
-                              // Inside your Flutter code where you process orders
-                              if (productDoc.exists) {
-                                final currentQuantity = productDoc['quantity'];
-                                final newQuantity = currentQuantity - quantity;
-                                print('currentQuantity: $currentQuantity');
-                                print('newQuantity: $newQuantity');
-                                productQuantityBatch.update(
-                                    productDocRef, {'quantity': newQuantity});
-
-                                final sellerId = userOrderDoc['sellerId'];
-
-                                // Create a List<Map<String, dynamic>> from productSales
-                                List<Map<String, dynamic>> productSalesList = [
-                                  {
-                                    'productId': productId.toString(),
-                                    'quantity': quantity,
-                                    'itemTotalPrice':
-                                        userOrderDoc['itemTotalPrice'],
-                                  },
-                                ];
-
-                                await updateSellerSalesStatistics(
-                                    sellerId,
-                                    userOrderDoc['itemTotalPrice'],
-                                    productSalesList);
-                              }
-                            }
-
-                            // Commit the updates to product quantities and seller statistics
-                            await productQuantityBatch.commit();
-
-                            // Update 'deliveryMessage' in 'userOrders'
-                            // Update 'deliveryMessage' in 'userOrders'
-                            final deliveryMessageBatch =
-                                FirebaseFirestore.instance.batch();
-
-                            for (final userOrderDoc
-                                in userOrdersSnapshot.docs) {
-                              final deliveryMessageCollectionRef =
-                                  FirebaseFirestore.instance
+                              final userOrdersQuerySnapshot =
+                                  await FirebaseFirestore.instance
                                       .collection('orders')
                                       .doc(widget.orderId)
                                       .collection('userOrders')
-                                      .doc(userOrderDoc.id)
-                                      .collection('deliveryMessage')
-                                      .doc(); // Generate a new document ID
+                                      .where('status', isEqualTo: 1)
+                                      .where('userId',
+                                          isEqualTo: widget.userUid)
+                                      .get();
 
-                              final messageData = {
-                                'timestamp': FieldValue.serverTimestamp(),
-                                'message': 'Seller is preparing the parcel.',
-                              };
+                              final batch = FirebaseFirestore.instance.batch();
+                              batch.update(
+                                FirebaseFirestore.instance
+                                    .collection('orders')
+                                    .doc(widget.orderId),
+                                {'orderId': widget.orderId},
+                              );
 
-                              deliveryMessageBatch.set(
-                                  deliveryMessageCollectionRef, messageData);
+                              for (final userOrderDoc
+                                  in userOrdersQuerySnapshot.docs) {
+                                final userOrderId = userOrderDoc.id;
+                                batch.update(
+                                  userOrderDoc.reference,
+                                  {'userOrderId': userOrderId},
+                                );
+                              }
+
+                              batch.update(
+                                FirebaseFirestore.instance
+                                    .collection('orders')
+                                    .doc(widget.orderId),
+                                {'status': 2},
+                              );
+
+                              final userOrdersQuery = FirebaseFirestore.instance
+                                  .collection('orders')
+                                  .doc(widget.orderId)
+                                  .collection('userOrders')
+                                  .where('status', isEqualTo: 1)
+                                  .where('userId', isEqualTo: widget.userUid);
+
+                              final userOrdersSnapshot =
+                                  await userOrdersQuery.get();
+
+                              for (final userOrderDoc
+                                  in userOrdersSnapshot.docs) {
+                                batch.update(userOrderDoc.reference, {
+                                  'status': 2,
+                                });
+                              }
+                              await batch.commit();
+                              final productQuantityBatch =
+                                  FirebaseFirestore.instance.batch();
+
+                              for (final userOrderDoc
+                                  in userOrdersSnapshot.docs) {
+                                final productId = userOrderDoc['productId'];
+                                final quantity = userOrderDoc['quantity'];
+                                final productDocRef = FirebaseFirestore.instance
+                                    .collection('products')
+                                    .doc(productId);
+                                final productDoc = await productDocRef.get();
+                                if (productDoc.exists) {
+                                  final currentQuantity =
+                                      productDoc['quantity'];
+                                  final newQuantity =
+                                      currentQuantity - quantity;
+                                  productQuantityBatch.update(
+                                      productDocRef, {'quantity': newQuantity});
+
+                                  final sellerId = userOrderDoc['sellerId'];
+
+                                  List<Map<String, dynamic>> productSalesList =
+                                      [
+                                    {
+                                      'productId': productId.toString(),
+                                      'quantity': quantity,
+                                      'itemTotalPrice':
+                                          userOrderDoc['itemTotalPrice'],
+                                    },
+                                  ];
+
+                                  await updateSellerSalesStatistics(
+                                      sellerId,
+                                      userOrderDoc['itemTotalPrice'],
+                                      productSalesList);
+                                }
+                              }
+                              await productQuantityBatch.commit();
+                              final deliveryMessageBatch =
+                                  FirebaseFirestore.instance.batch();
+
+                              for (final userOrderDoc
+                                  in userOrdersSnapshot.docs) {
+                                final deliveryMessageCollectionRef =
+                                    FirebaseFirestore.instance
+                                        .collection('orders')
+                                        .doc(widget.orderId)
+                                        .collection('userOrders')
+                                        .doc(userOrderDoc.id)
+                                        .collection('deliveryMessage')
+                                        .doc();
+
+                                final messageData = {
+                                  'timestamp': FieldValue.serverTimestamp(),
+                                  'message': 'Seller is preparing the parcel.',
+                                };
+
+                                deliveryMessageBatch.set(
+                                    deliveryMessageCollectionRef, messageData);
+                              }
+                              await deliveryMessageBatch.commit();
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Payment successful!'),
+                                ),
+                              );
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DeliveryPage(initialTabIndex: 1),
+                                ),
+                              );
                             }
-
-                            // Commit the updates to 'deliveryMessage'
-                            await deliveryMessageBatch.commit();
-
-                            // Close the loading dialog
-                            Navigator.pop(context);
-
-                            // Show a success message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Payment successful!'),
-                              ),
-                            );
-
-                            // Navigate to a new page (DeliveryPage in this case)
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const DeliveryPage(initialTabIndex: 1),
-                              ),
-                            );
                           }
                         },
-                        child: Text('Pay'),
+                        child: const Text('Pay'),
                       ),
                     ],
                   ),
@@ -515,14 +489,12 @@ class ExpiryDateInputFormatter extends TextInputFormatter {
     final text = newValue.text;
 
     if (text.length == 1 && text != '0' && text != '1') {
-      final newText =
-          '0$text'; // Automatically adds '0' for months like '6' to become '06'
+      final newText = '0$text';
       return newValue.copyWith(
         text: newText,
         selection: TextSelection.collapsed(offset: newText.length),
       );
     } else if (text.length == 2 && text[1] != '/') {
-      // If there are two digits and no '/', add a '/' after the second digit
       final newText = '$text/';
       return newValue.copyWith(
         text: newText,

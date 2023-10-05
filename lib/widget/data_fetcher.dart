@@ -32,7 +32,6 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
             return const CircularProgressIndicator();
           }
 
-          // Data has been fetched successfully
           final data = snapshot.data!.data() as Map<String, dynamic>?;
 
           if (data != null) {
@@ -57,7 +56,6 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
                           CircleAvatar(
                             radius: 36,
                             backgroundImage: NetworkImage(_user!.imageUrl),
-                            // You can also use other properties of CircleAvatar to customize the appearance
                           ),
                           const SizedBox(width: 16),
                           Text(
@@ -70,7 +68,6 @@ class _FirestoreDataFetcherState extends State<FirestoreDataFetcher> {
                         ],
                       ),
                     ),
-                    // You can add other widgets or UI elements here
                   ],
                 )
               : const Text('User data not found');

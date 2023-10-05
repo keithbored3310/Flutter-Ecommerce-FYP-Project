@@ -6,6 +6,7 @@ class ResetPasswordScreen extends StatelessWidget {
   final FirebaseAuth _firebase =
       FirebaseAuth.instance; // Initialize Firebase Authentication here
 
+  ResetPasswordScreen({super.key});
   void _resetPassword(BuildContext context) async {
     final email = _emailController.text.trim();
 
@@ -19,9 +20,9 @@ class ResetPasswordScreen extends StatelessWidget {
       );
     } catch (e) {
       // Handle errors, e.g., if the email doesn't exist in the Firebase Auth database.
-      print('Password reset failed: $e');
+      // print('Password reset failed: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Password reset failed. Please try again.'),
         ),
       );
@@ -32,7 +33,7 @@ class ResetPasswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reset Password'),
+        title: const Text('Reset Password'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,7 +42,7 @@ class ResetPasswordScreen extends StatelessWidget {
           children: [
             TextFormField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email Address'),
+              decoration: const InputDecoration(labelText: 'Email Address'),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null ||
@@ -52,10 +53,10 @@ class ResetPasswordScreen extends StatelessWidget {
                 return null;
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _resetPassword(context),
-              child: Text('Send Reset Email'),
+              child: const Text('Send Reset Email'),
             ),
           ],
         ),

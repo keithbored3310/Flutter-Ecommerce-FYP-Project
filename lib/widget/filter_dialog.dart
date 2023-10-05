@@ -10,7 +10,7 @@ class FilterDialog extends StatefulWidget {
   final String? selectedType;
   final void Function(FilterOptions options, String? newBrand,
       String? newCategory, String? newType) onApply;
-  final VoidCallback onClear; // Add this line
+  final VoidCallback onClear;
 
   const FilterDialog({
     super.key,
@@ -19,7 +19,7 @@ class FilterDialog extends StatefulWidget {
     required this.selectedCategory,
     required this.selectedType,
     required this.onApply,
-    required this.onClear, // Add this line
+    required this.onClear,
   });
 
   @override
@@ -27,14 +27,14 @@ class FilterDialog extends StatefulWidget {
 }
 
 class _FilterDialogState extends State<FilterDialog> {
-  late FilterOptions filterOptions; // Declare filterOptions here
+  late FilterOptions filterOptions;
   TextEditingController minPriceController = TextEditingController();
   TextEditingController maxPriceController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    filterOptions = widget.initialFilterOptions; // Initialize filterOptions
+    filterOptions = widget.initialFilterOptions;
     if (filterOptions.minPrice != null) {
       minPriceController.text = filterOptions.minPrice.toString();
     }
@@ -142,40 +142,33 @@ class _FilterDialogState extends State<FilterDialog> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Add the BrandDropdown widget
                   BrandDropdown(
-                    selectedBrand: filterOptions
-                        .selectedBrand, // Use filterOptions.selectedBrand
+                    selectedBrand: filterOptions.selectedBrand,
                     onBrandChanged: (value) {
                       setState(() {
-                        filterOptions.selectedBrand =
-                            value; // Update selectedBrand in filterOptions
-                        print("selectedBrand: ${filterOptions.selectedBrand}");
+                        filterOptions.selectedBrand = value;
+                        // print("selectedBrand: ${filterOptions.selectedBrand}");
                       });
                     },
                   ),
                   const SizedBox(height: 16),
                   CategoryDropdown(
-                    selectedCategory: filterOptions
-                        .selectedCategory, // Use filterOptions.selectedBrand
+                    selectedCategory: filterOptions.selectedCategory,
                     onCategoryChanged: (value) {
                       setState(() {
-                        filterOptions.selectedCategory =
-                            value; // Update selectedBrand in filterOptions
-                        print(
-                            "selectedCategory: ${filterOptions.selectedCategory}");
+                        filterOptions.selectedCategory = value;
+                        // print(
+                        // "selectedCategory: ${filterOptions.selectedCategory}");
                       });
                     },
                   ),
                   const SizedBox(height: 16),
                   TypeDropdown(
-                    selectedType: filterOptions
-                        .selectedType, // Use filterOptions.selectedBrand
+                    selectedType: filterOptions.selectedType,
                     onTypeChanged: (value) {
                       setState(() {
-                        filterOptions.selectedType =
-                            value; // Update selectedBrand in filterOptions
-                        print("selectedType: ${filterOptions.selectedType}");
+                        filterOptions.selectedType = value;
+                        // print("selectedType: ${filterOptions.selectedType}");
                       });
                     },
                   ),
@@ -190,16 +183,15 @@ class _FilterDialogState extends State<FilterDialog> {
               OutlinedButton(
                 onPressed: () {
                   setState(() {
-                    filterOptions = FilterOptions(); // Clear all filter options
-                    filterOptions.selectedBrand =
-                        null; // Clear the selected brand
+                    filterOptions = FilterOptions();
+                    filterOptions.selectedBrand = null;
                     filterOptions.selectedCategory = null;
                     filterOptions.selectedType = null;
                     minPriceController.clear();
                     maxPriceController.clear();
                   });
-                  widget.onClear(); // Notify parent that filters are cleared
-                  Navigator.of(context).pop(); // Pop the dialog screen
+                  widget.onClear();
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Clear'),
               ),
@@ -229,7 +221,7 @@ class FilterOptions {
   bool sortPriceDescending = false;
   double? minPrice;
   double? maxPrice;
-  String? selectedBrand; // New field for selected brand
-  String? selectedCategory; // New field for selected category
-  String? selectedType; // New field for selected type
+  String? selectedBrand;
+  String? selectedCategory;
+  String? selectedType;
 }
